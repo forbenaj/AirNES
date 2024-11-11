@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
+    <title>NESLAN</title>
+    <script src="https://unpkg.com/jsnes/dist/jsnes.min.js"></script>
+    <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="mainMenu">
+        <div id="introMenu">
+            <h3>Host or Join a game:</h3>
+            <input id="id-input" type="text" placeholder="Host name" maxlength="10">
+            <h4 id="inputErrorMessage"></h4>
+            <div id=joinButtonsContainer>
+                <button id="as-host-btn" onclick="enterAsHost()">Host</button>
+                <button id="as-player-btn" onclick="enterAsPlayer()">Join</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="hostMain">
+        <div id="emulator">
+            <canvas id="screen" width="256" height="240"></canvas>
+            <input type="file" id="rom-input" accept=".nes">
+            <button id="start-button" onclick="startEmulator()">Start Emulator</button>
+        </div>
+        <div id="hostMenu">
+            <div id="hostNameContainer">
+                <h1>Host name:</h1>
+                <h1 id="my_id">Test name</h1>
+            </div>
+            <div id="connectedPlayersContainer">
+                <h3>Connected players:</h3>
+                <div id="player1Indicator" class="indicatorContainer not-connected">
+                    <div id="player1KeyPress" class="keypress"></div>
+                    <p>Player 1 not connected</p>
+                </div>
+                <div id="player2Indicator" class="indicatorContainer not-connected">
+                    <div id="player2KeyPress" class="keypress"></div>
+                    <p>Player 2 not connected</p>
+                </div>
+            </div>
+            <div id="availableGamesContainer">
+                <h3>Available games:</h3>
+                <div id="gamesList"></div>
+                <button id="add-game-btn">Add game</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="joystickContainer">
+        <div class="direction-pad">
+          <div></div><div id="up" class="direction up controller-button">↑</div><div></div>
+          <div id="left" class="direction left controller-button">←</div><div></div><div id="right" class="direction right controller-button">→</div>
+          <div></div><div id="down" class="direction down controller-button">↓</div><div></div>
+        </div>
+      
+        <div class="center-buttons">
+          <div id="start" class="button controller-button">START</div>
+          <div id="select" class="button controller-button">SELECT</div>
+          <div id="mode" class="button controller-button">MODE</div>
+        </div>
+      
+        <div class="action-buttons">
+          <div id="a" class="action b-button controller-button">B</div>
+          <div id="b" class="action a-button controller-button">A</div>
+        </div>
+      </div>
+      <div id="loader-container">
+        <div id="loader"></div>
+      </div>
+    <script src="emulator.js"></script>
+    <script src="connection.js"></script>
+</body>
+</html>
