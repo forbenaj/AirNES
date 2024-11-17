@@ -192,29 +192,79 @@ body {
     gap: 20px;
     width: 100%;
     height: 100%;
+    user-select: none;
 }
 
 .direction-pad {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: repeat(3, 1fr);
-    grid-column-gap: 0px;
-    grid-row-gap: 0px;
-    align-items: center;
-    text-align: center;
+    position: relative;
     width: 40vw;
+    height: 40vw;
+    border: 1px solid white;
 }
 
 .direction {
-    width: 100%;
-    height: 100%;
+    width: 49%;
+    height: 49%;
     background-color: #555;
     border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 5px;
     cursor: pointer;
+}
+
+#up {
+    clip-path: polygon(
+        0 50%,
+        0% 0,
+        100% 0%,
+        100% 50%,
+        50% 100%
+    );
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%, 0);
+}
+
+#down {
+    clip-path: polygon(
+        0 50%,
+        50% 0,
+        100% 50%,
+        100% 100%,
+        0 100%
+    );
+    position: absolute;
+    bottom: 0%;
+    left: 50%;
+    transform: translate(-50%, 0%);
+}
+
+#left {
+  clip-path: polygon(
+    50% 0,
+    100% 50%,
+    50% 100%, 
+    0% 100%, 
+    0 0%
+  );
+  position: absolute;
+  top: 50%;
+  transform: translate(0%, -50%);
+}
+
+#right {
+    clip-path: polygon(
+        50% 0,
+        0 50%,
+        50% 100%, 
+        100% 100%, 
+        100% 0
+    );
+    position: absolute;
+    top: 50%;
+    right: 0%;
+    transform: translate(0%, -50%);
 }
 
 .center-buttons {
@@ -247,16 +297,16 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 10px;
+    gap: 6px;
     width: 40vw;
-    height: 40vw;
+    height: 100%;
 }
 
 .action {
     width: 100%;
     height: 100%;
     background-color: #d9534f;
-    border-radius: 50%;
+    border-radius: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -290,6 +340,10 @@ body {
     }
 }
 
+.pressed {
+    background-color: #007bff;
+}
+
 
 #loader-container {
     position: fixed;
@@ -318,3 +372,50 @@ body {
     100% { transform: rotate(360deg); }
   }
   
+
+
+/*
+
+   Fiddle example for triangles 
+
+  :root {
+    --button-border: black;
+    --button-border-width: 1px;
+    --button-background: white;
+    --button-padding: 0.85rem;
+    --button-arrow-width: 1rem;
+  }
+  
+  .buttons {
+    display: flex;
+    gap: 1rem;
+    background-color: #eee;
+    padding: 1rem;
+  }
+  
+  button {
+    background-color: var(--button-border);
+    clip-path: polygon(
+      calc(100% - var(--button-arrow-width)) 0,
+      100% 50%,
+      calc(100% - var(--button-arrow-width)) 100%, 
+      0% 100%, 
+      0 0%
+    );
+    padding: var(--button-border-width);
+    border: none;
+  }
+  
+  button div {
+    background-color: var(--button-background);
+    clip-path: inherit;
+    padding: var(--button-padding);
+    padding-right: calc(var(--button-padding) * 1.75);
+  }
+  
+  button:hover {
+    --button-border: orangered;
+    --button-background: orangered;
+    color: #fff;
+  }
+  */
