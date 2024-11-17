@@ -53,20 +53,20 @@
 
     <div id="joystickContainer">
         <div class="direction-pad">
-          <div></div><div id="up" class="direction up controller-button">↑</div><div></div>
-          <div id="left" class="direction left controller-button">←</div><div></div><div id="right" class="direction right controller-button">→</div>
-          <div></div><div id="down" class="direction down controller-button">↓</div><div></div>
+          <div id="up" class="direction up controller-button">↑</div>
+          <div id="left" class="direction left controller-button">←</div><div id="right" class="direction right controller-button">→</div>
+          <div id="down" class="direction down controller-button">↓</div>
         </div>
       
         <div class="center-buttons">
           <div id="start" class="button controller-button">START</div>
           <div id="select" class="button controller-button">SELECT</div>
-          <div id="mode" class="button controller-button">MODE</div>
+          <div id="mode" onclick="toggleScreenOrientation()" class="button controller-button">MODE</div>
         </div>
       
         <div class="action-buttons">
-          <div id="a" class="action b-button controller-button">B</div>
-          <div id="b" class="action a-button controller-button">A</div>
+          <div id="b" class="action b-button controller-button">B</div>
+          <div id="a" class="action a-button controller-button">A</div>
         </div>
       </div>
       <div id="loader-container">

@@ -128,13 +128,12 @@ function setupController(player, i){
     player.on('data', function(data){
         let playerKeyPress = document.getElementById("player"+i+"KeyPress")
         let button = buttonMap[data.action]
-        console.log(button)
         if (button !== undefined) {
             if (data.attr == 1) {
-                console.log("Pressed "+button)
+                console.log("Pressed "+data.action)
                 nes.buttonDown(i, button);
             } else {
-                console.log("Released "+button)
+                console.log("Released "+data.action)
                 nes.buttonUp(i, button);
                 playerKeyPress.innerText = ""
             }
@@ -146,24 +145,83 @@ function setupController(player, i){
     playerIndicator.getElementsByTagName("p")[0].innerText = "Player "+i+" connected"
 }
 
+let pressedButtons = []
+let touchMap = new Map()
 
 function createController() {
-    const controllerButtons = document.getElementsByClassName("controller-button")
-    for (let i = 0; i < controllerButtons.length; i++) {
-        controllerButtons[i].addEventListener("touchstart",(e)=>{
-            let id = e.target.id
-            console.log(id)
-            console.log("Pressed "+id)
-            e.preventDefault()
-            conn.send({action: id, attr: 1})
-        })
-        controllerButtons[i].addEventListener("touchend",(e)=>{
-            let id = e.target.id
-            console.log("Released "+id)
-            e.preventDefault()
-            conn.send({action: id, attr: 0})
-        })
-    }
+    document.addEventListener('touchstart', (e) => {
+        for (let i = 0; i < e.touches.length; i++) {
+            let touch = e.touches[i]
+            const touchX = touch.clientX;
+            const touchY = touch.clientY;
+
+        const element = document.elementFromPoint(touchX, touchY);
+
+            if (element.classList.contains("controller-button")) {
+                const buttonId = element.id;
+
+                if (!pressedButtons.includes(buttonId)) {
+                    pressedButtons.push(buttonId)
+
+                    conn.send({action: buttonId, attr: 1})
+                    element.classList.add("pressed")
+                    touchMap.set(touch.identifier, buttonId)
+                }
+            }
+        }
+    }, {passive: false});
+
+    document.addEventListener('touchend', (e) => {
+        for (let i = 0; i < e.changedTouches.length; i++) {
+            let touch = e.changedTouches[i]
+            if (touchMap.has(touch.identifier)) {
+                const buttonId = touchMap.get(touch.identifier)
+                conn.send({action: buttonId, attr: 0})
+                pressedButtons.splice(pressedButtons.indexOf(buttonId), 1)
+                document.getElementById(buttonId).classList.remove("pressed")
+                touchMap.delete(touch.identifier)
+            }
+        }
+    });
+
+
+    document.addEventListener('touchmove', (e) => {
+        for (let i = 0; i < e.touches.length; i++) {
+            let touch = e.touches[i]
+            const touchX = touch.clientX;
+            const touchY = touch.clientY;
+
+            const element = document.elementFromPoint(touchX, touchY);
+
+            if (element.classList.contains("controller-button")) {
+                const buttonId = element.id;
+
+                if (touchMap.has(touch.identifier)) {
+                    if (buttonId !== touchMap.get(touch.identifier)) {
+                        conn.send({action: touchMap.get(touch.identifier), attr: 0})
+                        pressedButtons.splice(pressedButtons.indexOf(touchMap.get(touch.identifier)), 1)
+                        document.getElementById(touchMap.get(touch.identifier)).classList.remove("pressed")
+                        touchMap.delete(touch.identifier)
+                    }
+                }
+                if (!pressedButtons.includes(buttonId)) {
+                    pressedButtons.push(buttonId)
+                    conn.send({action: buttonId, attr: 1})
+                    element.classList.add("pressed")
+                    touchMap.set(touch.identifier, buttonId)
+                }
+            }
+            else {
+                if (touchMap.has(touch.identifier)) {
+                    const buttonId = touchMap.get(touch.identifier)
+                    conn.send({action: buttonId, attr: 0})
+                    pressedButtons.splice(pressedButtons.indexOf(buttonId), 1)
+                    document.getElementById(buttonId).classList.remove("pressed")
+                    touchMap.delete(touch.identifier)
+                }
+            }
+        }
+    });
 
     document.documentElement.requestFullscreen();
     if (screen.orientation) {
@@ -171,4 +229,11 @@ function createController() {
           .catch((error) => console.log('Error locking orientation: ', error));
     }
     loaderContainer.style.display = "none"
+}
+
+function toggleScreenOrientation() {
+    if (screen.orientation) {
+        screen.orientation.lock('landscape')
+          .catch((error) => console.log('Error locking orientation: ', error));
+    }
 }
