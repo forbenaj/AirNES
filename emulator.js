@@ -46,21 +46,6 @@ function initializeEmulator(){
     });
     document.getElementById("start-button").addEventListener("click", initializeAudio);
 
-
-
-    document.getElementById("rom-input").addEventListener("change", function(event) {
-        const file = event.target.files[0];
-        const reader = new FileReader();
-
-        reader.onload = function() {
-            const romData = reader.result;
-            loadROM(romData);
-        };
-
-        reader.readAsBinaryString(file);
-    });
-
-
     document.addEventListener("keydown", (event) => {
         if (event.key === "ArrowUp") nes.buttonDown(1, jsnes.Controller.BUTTON_UP);
         if (event.key === "ArrowDown") nes.buttonDown(1, jsnes.Controller.BUTTON_DOWN);

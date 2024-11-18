@@ -11,6 +11,10 @@ let forceFullscreen = false
 
 let idInput = document.getElementById('id-input')
 
+let uploadRom = document.getElementById('upload-rom')
+let romInput = document.getElementById('rom-input')
+let startButton = document.getElementById('start-button')
+
 document.addEventListener('DOMContentLoaded', () => {
     const input = document.getElementById('uppercaseInput');
 
@@ -24,6 +28,22 @@ document.addEventListener('DOMContentLoaded', () => {
     })
 });
 
+romInput.addEventListener("change", function(event) {
+    const file = event.target.files[0];
+    const reader = new FileReader();
+
+    reader.onload = function() {
+        const romData = reader.result;
+        loadROM(romData);
+        addRomToList(file.name, romData)
+        startButton.style.display = "flex"
+        uploadRom.style.display = "none"
+    };
+
+    reader.readAsBinaryString(file);
+});
+
+
 let players = []
 
 var myself = null
@@ -32,19 +52,21 @@ var conn = null
 
 
 function enterAsHost(){
-    loaderContainer.style.display = "flex"
-    type = "host"
     let idInput = document.getElementById("id-input").value
     if(idInput==""){
         inputErrorMessage.innerText = "Insert a host name"
         return
     }
+    loaderContainer.style.display = "flex"
     myself = new Peer(idInput);
     myself.on('open', function(id) {
-        console.log('Connected. My peer ID is: ' + id);
+        console.log('Connected as host. My peer ID is: ' + id);
+        type = "host"
         mainMenu.remove()
         document.getElementById('hostMain').style.display = "flex"
-        document.getElementById('joystickContainer').style.display = "none"
+        if (!isMobile()) {
+            document.getElementById('joystickContainer').style.display = "none"
+        }
         loaderContainer.style.display = "none"
         initializeEmulator()
         document.getElementById('my_id').innerText = myself.id
@@ -59,8 +81,8 @@ function enterAsHost(){
 
     myself.on('error', (err) => {
         if (err.type === 'unavailable-id') {
-            console.log('The peer ID is already in use. Generating new');
-            enterAsHost()
+            console.log('The host name is already in use. Choose another one');
+            inputErrorMessage.innerText = "Host name already in use"
         }
         else if (err.type === 'peer-unavailable') {
             console.log('The peer you\'re trying to connect to doesn\'t exist');
@@ -69,17 +91,18 @@ function enterAsHost(){
             console.error('An unexpected error occurred:', err);
         }
         console.log(err.type)
+        loaderContainer.style.display = "none"
     });
 }
 
 function enterAsPlayer(){
-    loaderContainer.style.display = "flex"
-    type = "player"
     let idInput = document.getElementById("id-input").value
     if(idInput==""){
         inputErrorMessage.innerText = "Insert a host name"
         return
     }
+    loaderContainer.style.display = "flex"
+    type = "player"
     myself = new Peer();
     myself.on('open', function(id) {
         console.log('Connected. My peer ID is: ' + id);
@@ -95,15 +118,16 @@ function enterAsPlayer(){
     myself.on('error', (err) => {
         if (err.type === 'unavailable-id') {
             console.log('The peer ID is already in use. Generating new');
-            enterAsHost()
+            enterAsPlayer()
         }
         else if (err.type === 'peer-unavailable') {
             console.log('The peer you\'re trying to connect to doesn\'t exist');
-            inputErrorMessage.innerText = "Peer doesn't exist"
+            inputErrorMessage.innerText = "Host name doesn't exist"
         } else {
             console.error('An unexpected error occurred:', err);
         }
         console.log(err.type)
+        loaderContainer.style.display = "none"
     });
 }
 
@@ -223,17 +247,42 @@ function createController() {
         }
     });
 
-    document.documentElement.requestFullscreen();
-    if (screen.orientation) {
-        screen.orientation.lock('landscape')
-          .catch((error) => console.log('Error locking orientation: ', error));
-    }
+    toggleScreenOrientation()
+
     loaderContainer.style.display = "none"
 }
 
+function addRomToList(name, romData) {
+    let gamesList = document.getElementById("gamesList")
+    let newGame = document.createElement("div")
+    newGame.classList.add("game")
+    newGame.innerHTML = `<h3>${name}</h3>`
+    gamesList.appendChild(newGame)
+    newGame.getElementsByClassName("delete-game")[0].addEventListener("click", () => {
+        gamesList.removeChild(newGame)
+    })
+}
+
+let screenOrientation = "portrait"
+
 function toggleScreenOrientation() {
-    if (screen.orientation) {
-        screen.orientation.lock('landscape')
-          .catch((error) => console.log('Error locking orientation: ', error));
+    if (screenOrientation == "portrait") {
+        screenOrientation = "landscape"
+        document.documentElement.requestFullscreen();
+        if (screen.orientation) {
+            screen.orientation.lock('landscape')
+              .catch((error) => console.log('Error locking orientation: ', error));
+        }
+    } else {
+        screenOrientation = "portrait"
+        document.exitFullscreen();
+        if (screen.orientation) {
+            screen.orientation.unlock()
+              .catch((error) => console.log('Error unlocking orientation: ', error));
+        }
     }
+}
+
+function isMobile() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 }
