@@ -74,12 +74,55 @@ body {
     flex-direction: column;
     align-items: center;
     gap: 10px;
+    position: relative;
 }
 
 #screen {
     width: 80vh;
     height: 80vh;
     border: 1px solid black;
+}
+
+#upload-rom {
+    display: inline-block;
+    padding: 20px 40px;
+    background-color: #4CAF50;
+    color: white;
+    font-size: 2rem;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+#upload-rom:hover {
+    background-color: #45a049;
+}
+
+#rom-input {
+    display: none;
+}
+
+#start-button {
+    display: none;
+    padding: 20px 30px;
+    font-size: 2rem;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+#start-button:hover {
+    background-color: #0056b3;
 }
 
 #hostMenu {
@@ -103,7 +146,7 @@ body {
 }
 
 #availableGamesContainer {
-    display: none;
+    display: flex;
     flex-direction: column;
     gap: 10px;
     padding: 20px;
@@ -122,10 +165,6 @@ body {
 
 #hostNameContainer h1 {
     font-size: 1.5rem;
-}
-
-#rom-input {
-    padding: 5px;
 }
 
 #connectedPlayersContainer p {
@@ -170,18 +209,16 @@ body {
     gap: 10px;
 }
 
-#start-button {
-    padding: 10px 20px;
-    font-size: 1rem;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    cursor: pointer;
-    border-radius: 5px;
-}
-
-#start-button:hover {
-    background-color: #0056b3;
+@media (orientation: portrait) {
+    #hostMain {
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+    #screen {
+        width: 100vw;
+        height: 100vw;
+    }
 }
 
 /* Joystick style */
