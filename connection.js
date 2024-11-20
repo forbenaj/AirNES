@@ -35,7 +35,8 @@ romInput.addEventListener("change", function(event) {
     reader.onload = function() {
         const romData = reader.result;
         loadROM(romData);
-        addRomToList(file.name, romData)
+        //addRomToList(file.name, romData)
+        console.log("Loaded "+file.name)
         startButton.style.display = "flex"
         uploadRom.style.display = "none"
     };

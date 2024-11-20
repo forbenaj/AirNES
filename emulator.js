@@ -95,4 +95,5 @@ function loadROM(romData) {
 function startEmulator() {
     nes.frame();
     setInterval(() => nes.frame(), 1000/60);
+    document.getElementById("start-button").style.display = "none"
 }
