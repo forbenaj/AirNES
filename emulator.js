@@ -12,16 +12,15 @@ let audioLeftBuffer = [];
 let audioRightBuffer = [];
 
 const buttonMap = {
-    'up': jsnes.Controller.BUTTON_UP,
-    'down': jsnes.Controller.BUTTON_DOWN,
-    'left': jsnes.Controller.BUTTON_LEFT,
-    'right': jsnes.Controller.BUTTON_RIGHT,
-    'start': jsnes.Controller.BUTTON_START,
-    'select': jsnes.Controller.BUTTON_SELECT,
-    'a': jsnes.Controller.BUTTON_A,
-    'b': jsnes.Controller.BUTTON_B
+    'up': {controller: jsnes.Controller.BUTTON_UP, pressed: false, time: 0},
+    'down': {controller: jsnes.Controller.BUTTON_DOWN, pressed: false, time: 0},
+    'left': {controller: jsnes.Controller.BUTTON_LEFT, pressed: false, time: 0},
+    'right': {controller: jsnes.Controller.BUTTON_RIGHT, pressed: false, time: 0},
+    'start': {controller: jsnes.Controller.BUTTON_START, pressed: false, time: 0},
+    'select': {controller: jsnes.Controller.BUTTON_SELECT, pressed: false, time: 0},
+    'a': {controller: jsnes.Controller.BUTTON_A, pressed: false, time: 0},
+    'b': {controller: jsnes.Controller.BUTTON_B, pressed: false, time: 0}
 };
-
 function initializeEmulator(){
     canvas = document.getElementById("screen")
     canvasContext = canvas.getContext("2d");
