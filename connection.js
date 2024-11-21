@@ -147,23 +147,54 @@ function connectToHost(hostName){
        console.log(err.type)
     });
 }
+function activateCounter(button) {
+    button.time = 0;
 
+    const intervalId = setInterval(() => {
+        button.time += 1;
+
+        if (!button.pressed || button.time > 5) {
+            clearInterval(intervalId);
+            console.log("Condition met at "+button.time+", stopping.");
+        }
+    }, 1);
+}
 
 function setupController(player, i){
     player.on('data', function(data){
-        let playerKeyPress = document.getElementById("player"+i+"KeyPress")
-        let button = buttonMap[data.action]
-        if (button !== undefined) {
-            if (data.attr == 1) {
-                console.log("Pressed "+data.action)
-                nes.buttonDown(i, button);
-            } else {
-                console.log("Released "+data.action)
-                nes.buttonUp(i, button);
-                playerKeyPress.innerText = ""
-            }
+        //let playerKeyPress = document.getElementById("player"+i+"KeyPress")
+        if (data.attr == 1) {
+            pressButton(data.action, i)
+        } else {
+            releaseButton(data.action, i)
         }
     });
+    function pressButton(buttonId, i){
+        let button = buttonMap[buttonId]
+        if (button !== undefined) {
+            nes.buttonDown(i, button.controller);
+            console.log("Pressed "+buttonId)
+            button.pressed = true
+            activateCounter(button)
+        }
+    }
+    function releaseButton(buttonId, i) {
+        let button = buttonMap[buttonId];
+    
+        if (!button) {
+            console.log("Button not found");
+            return;
+        }
+    
+        const intervalCheck = setInterval(() => {
+            if (button.time > 5) {
+                nes.buttonUp(i, button.controller);
+                console.log("Released " + buttonId + " at "+ button.time);
+                button.pressed = false;
+                clearInterval(intervalCheck);
+            }
+        }, 1);
+    }
     let playerIndicator = document.getElementById("player"+i+"Indicator")
     playerIndicator.classList.remove("not-connected")
     playerIndicator.classList.add("connected")
