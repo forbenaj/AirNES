@@ -1,6 +1,6 @@
 # AirNES
 
-**AirNES** is an open source air console that allows players to instantly turn their PC into a game console, using their smartphones and joysticks. It leverages the **Peer.js** library for LAN connectivity between host and players.
+**AirNES** is an open source *air console** that allows players to instantly turn their PC into a game console, using their smartphones as joysticks. It leverages the **Peer.js** library for LAN connectivity between host and players, and currently uses the **JSNES** emulator.
 
 ## Play now!
 
@@ -47,15 +47,9 @@ To run **AirNES** locally, follow these steps:
 
 4. **Controller:**
    - Use the on-screen buttons on mobile or touch-enabled devices.
-   - For desktop users, you can customize the controller layout.
 
 5. **Full-Screen Mode:**
-   - Toggle the screen orientation by clicking the "Fullscreen" button.
-
-## Controls
-
-- **Mobile:** Touch-based controls on the screen.
-- **Desktop:** Button mappings are handled through the UI (or optionally with a physical controller).
+   - Toggle the screen orientation and full screen by touching the "Mode" button.
 
 ## Contributing
 
@@ -67,22 +61,42 @@ Contributions to **AirNES** are welcome! To contribute:
 4. Push to the branch (`git push origin feature-name`).
 5. Create a new Pull Request.
 
-Please ensure that your code follows the style guide and includes tests where necessary.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
 ## Acknowledgments
 
-- **Peer.js** for providing an easy-to-use peer-to-peer framework.
-- **NES emulator** used in this project for running NES games in the browser.
-- Inspiration and support from open-source emulator projects.
+- [**Peer.js**](https://github.com/peers/peerjs) an easy-to-use peer-to-peer framework.
+- [**JSNES**](https://github.com/bfirsh/jsnes) used in this project for running NES games in the browser.
+- Thanks to [**AirConsole**](https://www.airconsole.com/) for creating the concept of an air console, sorry no sorry for trying to make a free and open-source alternative!
 
 ## Contact
 
-For any issues or queries, please open an issue on the GitHub repository, or reach out to [your-email@example.com](mailto:your-email@example.com).
+For any issues or queries, please open an issue on the GitHub repository.
 
----
+# Future
 
-Enjoy playing NES games with friends in the cloud with **AirNES**!
+AirNES is a proof of concept, not intended to be a copy or replacement to AirConsole, but a fun little project to play with friends anywhere.
+*I find it hard to find a name for the concept other than "air console". I haven't seen a gaming platform with this form factor anywhere else other than AirConsole, and I think the name suits the concept well. Suggestions are appreciated.
+
+I feel that recently, video game and console design has shifted away from shared-screen experiences, prioritizing online multiplayer where you don't need to be in the same room to play.
+Social 'party' experiences are becoming increasingly rare, and especially difficult to pull off with portable devices (DIY Perks makes an excellent point about this: LINK).
+
+A console of this kind is just an addition to the scarce and unpopular list of modern party games, and has no other purpose than to try and bring people together. Physically.
+
+That's why all my efforts will be focused on making this project as easy to use as possible, and accessible to everyone. You should be able to open nes.cosas.ar from any device, and play immediately. And it should be easy enough to create games for it or add new consoles.
+
+## Opensourceness
+
+I encourage all creators to:
+
+- Add new emulators to the project.
+- Create games specifically targeted for the project.
+- Add features, fix bugs, suggest modifications, etc.
+- Create your own version of the project.
+
+### Creating for AirNES
+
+The first thing that comes up when trying to play a game using a smartphone as a joystick, is the lack of tactile feedback. You don't know what the heck you're pressing, and you can't look at the controller as you look at the screen. So games for a console of this kind should be designed with this in mind.
+
+- NES games are perfect for this, because they have minimum controls, and I designed the joystick with some big ass buttons you can't miss.
+- AirConsole games are also designed with minimum controls, or in a way that you can look at the phone screen without missing anything.
+
+Overall, games should be designed either with few inputs and big buttons, or with a non-realtime dynamic (like trivia games).
