@@ -5,7 +5,7 @@ function enterAsPlayer(){
         return
     }
     loaderContainer.style.display = "flex"
-    type = "player"
+    device_mode = "player"
     myself = new Peer();
     myself.on('open', function(id) {
         console.log('Connected. My peer ID is: ' + id);
@@ -35,7 +35,6 @@ function enterAsPlayer(){
 }
 
 
-
 function connectToHost(hostName){
     conn = myself.connect(hostName);
 
@@ -50,6 +49,8 @@ function connectToHost(hostName){
        console.log(err.type)
     });
 }
+
+
 function activateCounter(button) {
     button.time = 0;
 
@@ -61,6 +62,7 @@ function activateCounter(button) {
         }
     }, 1);
 }
+
 
 let pressedButtons = []
 let touchMap = new Map()
@@ -144,6 +146,7 @@ function createController() {
 
     loaderContainer.style.display = "none"
 }
+
 
 let screenOrientation = "portrait"
 
