@@ -155,7 +155,6 @@ function activateCounter(button) {
 
         if (!button.pressed || button.time > 5) {
             clearInterval(intervalId);
-            console.log("Condition met at "+button.time+", stopping.");
         }
     }, 1);
 }
@@ -173,7 +172,6 @@ function setupController(player, i){
         let button = buttonMap[buttonId]
         if (button !== undefined) {
             nes.buttonDown(i, button.controller);
-            console.log("Pressed "+buttonId)
             button.pressed = true
             activateCounter(button)
         }
@@ -182,14 +180,12 @@ function setupController(player, i){
         let button = buttonMap[buttonId];
     
         if (!button) {
-            console.log("Button not found");
             return;
         }
     
         const intervalCheck = setInterval(() => {
             if (button.time > 5) {
                 nes.buttonUp(i, button.controller);
-                console.log("Released " + buttonId + " at "+ button.time);
                 button.pressed = false;
                 clearInterval(intervalCheck);
             }
@@ -284,6 +280,39 @@ function createController() {
     loaderContainer.style.display = "none"
 }
 
+function joinFromHost(){
+    let player = null
+    players.push(player)
+    let i = players.length
+    document.addEventListener("keydown", (event) => {
+        if (event.key === "ArrowUp") nes.buttonDown(i, jsnes.Controller.BUTTON_UP);
+        if (event.key === "ArrowDown") nes.buttonDown(i, jsnes.Controller.BUTTON_DOWN);
+        if (event.key === "ArrowLeft") nes.buttonDown(i, jsnes.Controller.BUTTON_LEFT);
+        if (event.key === "ArrowRight") nes.buttonDown(i, jsnes.Controller.BUTTON_RIGHT);
+        if (event.key === "a") nes.buttonDown(i, jsnes.Controller.BUTTON_A);
+        if (event.key === "s") nes.buttonDown(i, jsnes.Controller.BUTTON_B);
+        if (event.key === "Enter") nes.buttonDown(i, jsnes.Controller.BUTTON_START);
+        if (event.key === " ") nes.buttonDown(i, jsnes.Controller.BUTTON_SELECT);
+    });
+
+    document.addEventListener("keyup", (event) => {
+        if (event.key === "ArrowUp") nes.buttonUp(i, jsnes.Controller.BUTTON_UP);
+        if (event.key === "ArrowDown") nes.buttonUp(i, jsnes.Controller.BUTTON_DOWN);
+        if (event.key === "ArrowLeft") nes.buttonUp(i, jsnes.Controller.BUTTON_LEFT);
+        if (event.key === "ArrowRight") nes.buttonUp(i, jsnes.Controller.BUTTON_RIGHT);
+        if (event.key === "a") nes.buttonUp(i, jsnes.Controller.BUTTON_A);
+        if (event.key === "s") nes.buttonUp(i, jsnes.Controller.BUTTON_B);
+        if (event.key === "Enter") nes.buttonUp(i, jsnes.Controller.BUTTON_START);
+        if (event.key === " ") nes.buttonUp(i, jsnes.Controller.BUTTON_SELECT);
+    });
+    let playerIndicator = document.getElementById("player"+i+"Indicator")
+    playerIndicator.classList.remove("not-connected")
+    playerIndicator.classList.add("connected")
+    playerIndicator.getElementsByTagName("p")[0].innerText = "Player "+i+" connected (host)"
+
+    joinFromHostBtn.setAttribute("disabled", true)
+}
+
 function addRomToList(name, romData) {
     let gamesList = document.getElementById("gamesList")
     let newGame = document.createElement("div")
@@ -318,3 +347,19 @@ function toggleScreenOrientation() {
 function isMobile() {
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 }
+
+let wakeLock = null;
+
+async function requestWakeLock() {
+  try {
+    wakeLock = await navigator.wakeLock.request('screen');
+    wakeLock.addEventListener('release', () => {
+      console.log('Wake lock was released');
+    });
+    console.log('Wake lock acquired');
+  } catch (err) {
+    console.error(`Wake lock request failed: ${err}`);
+  }
+}
+
+requestWakeLock();

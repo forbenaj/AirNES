@@ -105,16 +105,17 @@ A good idea is to include race games with automatic acceleration, so it's either
 
 You can look at this list to have an idea of what I'm working on, what I need help with, and what are my ideas for the future:
 
+- [ ] Fix view when hosting from phone
+- [ ] Make game selection list work
+  - [ ] Add cache
+
 - [ ] Add vibration to the controller
 - [ ] Add other emulators
   - [ ] Nintendo 64
   - [ ] Game Boy
   - [ ] PlayStation
-
-- [ ] Fix phone view when hosting
+- [ ] Add controller mapping
 - [ ] Add fullscreen
-- [ ] Make game selection list work
-  - [ ] Add cache
 
 AirConsole let's you play the game even if you're not in the same network, with insanely low latency. I don't know how they do it, but I need that.
 - [ ] Add that shit
