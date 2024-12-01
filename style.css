@@ -236,7 +236,7 @@ body {
     position: relative;
     width: 40vw;
     height: 40vw;
-    border: 1px solid white;
+    align-self: end;
 }
 
 .direction {

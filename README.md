@@ -1,6 +1,6 @@
 # AirNES
 
-**AirNES** is an open source *air console** that allows players to instantly turn their PC into a game console, using their smartphones as joysticks. It leverages the **Peer.js** library for LAN connectivity between host and players, and currently uses the **JSNES** emulator.
+**AirNES** is an open source *air console*⁽¹⁾ that allows players to instantly turn their PC into a game console, using their smartphones as joysticks. It leverages the **Peer.js** library for LAN connectivity between host and players, and currently uses the **JSNES** emulator.
 
 ## Play now!
 
@@ -11,7 +11,7 @@ Just go to [nes.cosas.ar](https://nes.cosas.ar) from any device to host or join 
 ## Features
 
 - **Peer-to-Peer LAN connection:** Connect to the host just by joining the same static webpage and being on the same Wi-Fi network.
-- **Touch-Friendly Controller:** Fully interactive on mobile devices with touch controls.
+- **Use your phone as a controller:** Open the same webpage on your phone and use it as a controller.
 - **ROM Upload and Management:** Upload any ROM and have them always at hand.
 - **Cross-Device Play:** Works on both desktop and mobile devices, either as host or as player.
 
@@ -73,15 +73,14 @@ For any issues or queries, please open an issue on the GitHub repository.
 
 # Future
 
-AirNES is a proof of concept, not intended to be a copy or replacement to AirConsole, but a fun little project to play with friends anywhere.
-*I find it hard to find a name for the concept other than "air console". I haven't seen a gaming platform with this form factor anywhere else other than AirConsole, and I think the name suits the concept well. Suggestions are appreciated.
+AirNES is a proof of concept, not intended to be a copy or replacement to AirConsole, but a fun little project to play with friends anywhere.<br>
+⁽¹⁾ I find it hard to come up with a name for this kind of console other than "air console". I haven't seen a gaming platform with this form factor anywhere else other than AirConsole, and I think the name suits the concept well. Suggestions are appreciated.
 
-I feel that recently, video game and console design has shifted away from shared-screen experiences, prioritizing online multiplayer where you don't need to be in the same room to play.
-Social 'party' experiences are becoming increasingly rare, and especially difficult to pull off with portable devices (DIY Perks makes an excellent point about this: LINK).
+I feel that recently, video game and console design has shifted away from shared-screen experiences, prioritizing online multiplayer where you don't need to be in the same room to play. Social 'party' experiences are becoming increasingly rare, and especially difficult to pull off with portable devices ([DIY Perks makes an excellent point about this](https://www.youtube.com/watch?v=W4PHhurAhwc)).
 
-A console of this kind is just an addition to the scarce and unpopular list of modern party games, and has no other purpose than to try and bring people together. Physically.
+A console of this kind is just meant to be an addition to the scarce and unpopular list of modern party games, and has no other purpose than to try and bring people together. Physically.
 
-That's why all my efforts will be focused on making this project as easy to use as possible, and accessible to everyone. You should be able to open nes.cosas.ar from any device, and play immediately. And it should be easy enough to create games for it or add new consoles.
+That's why all my efforts will be focused on making this project as easy to use as possible, and accessible to everyone. You should be able to open nes.cosas.ar from any device, and play immediately with as little friction as possible. And it should be easy enough to create games for it or add new consoles.
 
 ## Opensourceness
 
@@ -100,3 +99,35 @@ The first thing that comes up when trying to play a game using a smartphone as a
 - AirConsole games are also designed with minimum controls, or in a way that you can look at the phone screen without missing anything.
 
 Overall, games should be designed either with few inputs and big buttons, or with a non-realtime dynamic (like trivia games).
+A good idea is to include race games with automatic acceleration, so it's either left or right, or games with single-button inputs, like those Digital Chocolate classics.
+
+### Helping with the project
+
+You can look at this list to have an idea of what I'm working on, what I need help with, and what are my ideas for the future:
+
+- [ ] Add vibration to the controller
+- [ ] Add other emulators
+  - [ ] Nintendo 64
+  - [ ] Game Boy
+  - [ ] PlayStation
+
+- [ ] Fix phone view when hosting
+- [ ] Add fullscreen
+- [ ] Make game selection list work
+  - [ ] Add cache
+
+AirConsole let's you play the game even if you're not in the same network, with insanely low latency. I don't know how they do it, but I need that.
+- [ ] Add that shit
+
+The NES emulator has a few issues, and it may be the way I implemented it, but also it would be good to try some others. I've played browser emulators with no issues at all, but mine for some reason is terribly laggy and performance-heavy.
+- [ ] Fix delayed audio
+- [ ] Fix framerate
+When you press a button too quickly, it doesn't register. I added a timer fix, but it's a little hacky
+- [ ] Fix unrecognized input
+
+PeerParty is a thingy I tried to implement for a previous project.
+Instead of having to use a hostname, the users would see a list of active hosts, and connect to them by selecting one, or host a game themselves.
+The problem is that Peer.js doesn't have any way to advertise a peer, you need to add have the peer id to connect to it.
+So I did a hacky thing, where when you open the app, it tries to create a peer with a number (starting by 14 for some reason), and if it fails, it tries to create it with the next one, until it finds one that works. All those previous attempts are then displayed as a list of peers to connect to, because it means they are taken by other devices.
+This could be probably solved if I used WebRTC directly, but I'm not sure how to do that. Any way, it's either adapting the hacky thing and making it work, or coming up with a WebRTC solution.
+- [ ] Implement PeerParty
