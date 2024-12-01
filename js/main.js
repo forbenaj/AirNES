@@ -1,9 +1,6 @@
-let type
-
-let joinButton = document.getElementById("start-btn")
+let device_mode
 
 let mainMenu = document.getElementById("mainMenu")
-let introMenu = document.getElementById("introMenu")
 
 let loaderContainer = document.getElementById("loader-container")
 
@@ -16,9 +13,7 @@ let romInput = document.getElementById('rom-input')
 let startButton = document.getElementById('start-button')
 
 let players = []
-
 var myself = null
-
 var conn = null
 
 

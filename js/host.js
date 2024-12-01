@@ -25,7 +25,7 @@ function enterAsHost(){
     myself = new Peer(idInput);
     myself.on('open', function(id) {
         console.log('Connected as host. My peer ID is: ' + id);
-        type = "host"
+        device_mode = "host"
         mainMenu.remove()
         document.getElementById('hostMain').style.display = "flex"
         if (!isMobile()) {
@@ -58,7 +58,6 @@ function enterAsHost(){
         loaderContainer.style.display = "none"
     });
 }
-
 
 
 function setupController(player, i){
@@ -100,7 +99,6 @@ function setupController(player, i){
 }
 
 
-
 function joinFromHost(){
     let player = null
     players.push(player)
@@ -133,6 +131,7 @@ function joinFromHost(){
 
     joinFromHostBtn.setAttribute("disabled", true)
 }
+
 
 function addRomToList(name, romData) {
     let gamesList = document.getElementById("gamesList")
