@@ -45,28 +45,6 @@ function initializeEmulator(){
     });
     document.getElementById("start-button").addEventListener("click", initializeAudio);
 
-    document.addEventListener("keydown", (event) => {
-        if (event.key === "ArrowUp") nes.buttonDown(1, jsnes.Controller.BUTTON_UP);
-        if (event.key === "ArrowDown") nes.buttonDown(1, jsnes.Controller.BUTTON_DOWN);
-        if (event.key === "ArrowLeft") nes.buttonDown(1, jsnes.Controller.BUTTON_LEFT);
-        if (event.key === "ArrowRight") nes.buttonDown(1, jsnes.Controller.BUTTON_RIGHT);
-        if (event.key === "a") nes.buttonDown(1, jsnes.Controller.BUTTON_A);
-        if (event.key === "s") nes.buttonDown(1, jsnes.Controller.BUTTON_B);
-        if (event.key === "Enter") nes.buttonDown(1, jsnes.Controller.BUTTON_START);
-        if (event.key === " ") nes.buttonDown(1, jsnes.Controller.BUTTON_SELECT);
-    });
-
-    document.addEventListener("keyup", (event) => {
-        if (event.key === "ArrowUp") nes.buttonUp(1, jsnes.Controller.BUTTON_UP);
-        if (event.key === "ArrowDown") nes.buttonUp(1, jsnes.Controller.BUTTON_DOWN);
-        if (event.key === "ArrowLeft") nes.buttonUp(1, jsnes.Controller.BUTTON_LEFT);
-        if (event.key === "ArrowRight") nes.buttonUp(1, jsnes.Controller.BUTTON_RIGHT);
-        if (event.key === "a") nes.buttonUp(1, jsnes.Controller.BUTTON_A);
-        if (event.key === "s") nes.buttonUp(1, jsnes.Controller.BUTTON_B);
-        if (event.key === "Enter") nes.buttonUp(1, jsnes.Controller.BUTTON_START);
-        if (event.key === " ") nes.buttonUp(1, jsnes.Controller.BUTTON_SELECT);
-    });
-
 }
 
 function initializeAudio() {

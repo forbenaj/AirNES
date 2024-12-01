@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
-    <title>NESLAN</title>
+    <title>AirNES - Las Cosas</title>
     <script src="https://unpkg.com/jsnes/dist/jsnes.min.js"></script>
     <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
     <link rel="stylesheet" href="style.css">
@@ -11,6 +11,7 @@
 <body>
     <div id="mainMenu">
         <div id="introMenu">
+            <h1 id="title">Welcome to AirNES!</h1>
             <h3>Host or Join a game:</h3>
             <input id="id-input" type="text" placeholder="Host name" maxlength="10">
             <h4 id="inputErrorMessage"></h4>
@@ -43,6 +44,7 @@
                     <div id="player2KeyPress" class="keypress"></div>
                     <p>Player 2 not connected</p>
                 </div>
+                <button id="joinFromHostBtn" onclick="joinFromHost()">Join from this device</button>
             </div>
             <div id="availableGamesContainer">
                 <h3>Available games:</h3>
