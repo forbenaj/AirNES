@@ -1,15 +1,74 @@
-let nes;
-let canvasContext;
-let audioContext;
-let audioScriptNode;
+class Emulator{
+    constructor(){
+        this.nes = null
+        this.canvas = null
+        this.canvasContext = null
+        this.frameBuffer = null
+        this.audioContext = null
+        this.audioScriptNode = null
+        this.audioLeftBuffer = []
+        this.audioRightBuffer = []
+    }
+    initializeEmulator(){
+        this.canvas = document.getElementById("screen")
+        this.canvasContext = this.canvas.getContext("2d");
+        this.frameBuffer = this.canvasContext.createImageData(256, 240)
+    
+        this.nes = new jsnes.NES({
+            onFrame: (frameBufferData) => {
+                for (let i = 0; i < frameBufferData.length; i++) {this.frameBuffer.data[i * 4 + 0] = frameBufferData[i] & 0x0000FF;
+                    this.frameBuffer.data[i * 4 + 1] = (frameBufferData[i] & 0x00FF00) >> 8;
+                    this.frameBuffer.data[i * 4 + 2] = (frameBufferData[i] & 0xFF0000) >> 16;
+                    this.frameBuffer.data[i * 4 + 3] = 0xFF;
+                    
+                }
+                this.canvasContext.putImageData(this.frameBuffer, 0, 0);
+            },
+            onAudioSample: (left, right) => {
+                if (this.audioContext && this.audioScriptNode) {
+                    this.audioLeftBuffer.push(left);
+                    this.audioRightBuffer.push(right);
+                }
+            }
+        });
+        document.getElementById("start-button").addEventListener("click", this.initializeAudio);
+    
+    }
+    initializeAudio() {
+        this.audioLeftBuffer = []
+        this.audioRightBuffer = []
+        if (!this.audioContext) {
+            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            this.audioScriptNode = this.audioContext.createScriptProcessor(audioBufferSize, 0, 2);
+            this.audioScriptNode.onaudioprocess = (event) => {
+                const outputLeft = event.outputBuffer.getChannelData(0);
+                const outputRight = event.outputBuffer.getChannelData(1);
+    
+                for (let i = 0; i < audioBufferSize; i++) {
+                    outputLeft[i] = this.audioLeftBuffer.length > 0 ? this.audioLeftBuffer.shift() : 0;
+                    outputRight[i] = this.audioRightBuffer.length > 0 ? this.audioRightBuffer.shift() : 0;
+                }
+            };
+    
+            this.audioScriptNode.connect(this.audioContext.destination);
+        }
+    }
+    
+    loadROM(romData) {
+        this.nes.loadROM(romData);
+    }
+
+    startEmulator() {
+        this.nes.frame();
+        setInterval(() => this.nes.frame(), 1000/60);
+        document.getElementById("start-button").style.display = "none"
+    }
+    
+}
+
 const audioBufferSize = 4096;
 const FRAME_RATE = 1000 / 60;
 
-let canvas;
-let frameBuffer;
-
-let audioLeftBuffer = [];
-let audioRightBuffer = [];
 
 const buttonMap = {
     'up': {controller: jsnes.Controller.BUTTON_UP, pressed: false, time: 0},
@@ -21,56 +80,3 @@ const buttonMap = {
     'a': {controller: jsnes.Controller.BUTTON_A, pressed: false, time: 0},
     'b': {controller: jsnes.Controller.BUTTON_B, pressed: false, time: 0}
 };
-function initializeEmulator(){
-    canvas = document.getElementById("screen")
-    canvasContext = canvas.getContext("2d");
-    frameBuffer = canvasContext.createImageData(256, 240)
-
-    nes = new jsnes.NES({
-        onFrame: function (frameBufferData) {
-            for (let i = 0; i < frameBufferData.length; i++) {frameBuffer.data[i * 4 + 0] = frameBufferData[i] & 0x0000FF;
-                frameBuffer.data[i * 4 + 1] = (frameBufferData[i] & 0x00FF00) >> 8;
-                frameBuffer.data[i * 4 + 2] = (frameBufferData[i] & 0xFF0000) >> 16;
-                frameBuffer.data[i * 4 + 3] = 0xFF;
-                
-            }
-            canvasContext.putImageData(frameBuffer, 0, 0);
-        },
-        onAudioSample: function(left, right) {
-            if (audioContext && audioScriptNode) {
-                audioLeftBuffer.push(left);
-                audioRightBuffer.push(right);
-            }
-        }
-    });
-    document.getElementById("start-button").addEventListener("click", initializeAudio);
-
-}
-
-function initializeAudio() {
-    if (!audioContext) {
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        audioScriptNode = audioContext.createScriptProcessor(audioBufferSize, 0, 2);
-        audioScriptNode.onaudioprocess = (event) => {
-            const outputLeft = event.outputBuffer.getChannelData(0);
-            const outputRight = event.outputBuffer.getChannelData(1);
-
-            for (let i = 0; i < audioBufferSize; i++) {
-                outputLeft[i] = audioLeftBuffer.length > 0 ? audioLeftBuffer.shift() : 0;
-                outputRight[i] = audioRightBuffer.length > 0 ? audioRightBuffer.shift() : 0;
-            }
-        };
-
-        audioScriptNode.connect(audioContext.destination);
-    }
-}
-
-function loadROM(romData) {
-    nes.loadROM(romData);
-}
-
-function startEmulator() {
-    nes.frame();
-    setInterval(() => nes.frame(), 1000/60);
-    document.getElementById("start-button").style.display = "none"
-}
