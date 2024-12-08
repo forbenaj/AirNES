@@ -78,9 +78,9 @@ AirNES is a proof of concept, not intended to be a copy or replacement to AirCon
 
 I feel that recently, video game and console design has shifted away from shared-screen experiences, prioritizing online multiplayer where you don't need to be in the same room to play. Social 'party' experiences are becoming increasingly rare, and especially difficult to pull off with portable devices ([DIY Perks makes an excellent point about this](https://www.youtube.com/watch?v=W4PHhurAhwc)).
 
-A console of this kind is just meant to be an addition to the scarce and unpopular list of modern party games, and has no other purpose than to try and bring people together. Physically.
+A console of this kind is just meant to be an addition to the scarce and unpopular list of modern party games, and has no other purpose than to try and bring people together and to be a canvas for creators to experiment with.
 
-That's why all my efforts will be focused on making this project as easy to use as possible, and accessible to everyone. You should be able to open nes.cosas.ar from any device, and play immediately with as little friction as possible. And it should be easy enough to create games for it or add new consoles.
+That's why all my efforts will be focused on making this project as easy to use as possible, and accessible to everyone. You should be able to open [nes.cosas.ar](nes.cosas.ar) from any device, and play immediately with as little friction as possible. And it should be easy enough to create games for it or add new consoles.
 
 ## Opensourceness
 
@@ -116,13 +116,12 @@ You can look at this list to have an idea of what I'm working on, what I need he
   - [ ] PlayStation
 - [ ] Add controller mapping
 - [ ] Add fullscreen
+- [ ] Add savestates
 
-AirConsole let's you play the game even if you're not in the same network, with insanely low latency. I don't know how they do it, but I need that.
-- [ ] Add that shit
-
-The NES emulator has a few issues, and it may be the way I implemented it, but also it would be good to try some others. I've played browser emulators with no issues at all, but mine for some reason is terribly laggy and performance-heavy.
+The NES emulator has a few issues, and it may be the way I implemented it, but also it would be good to try some others. I've played browser emulators with no issues at all, but mine for some reason is terribly laggy and performance-heavy, and framerate varies from computer to computer.
 - [ ] Fix delayed audio
 - [ ] Fix framerate
+
 When you press a button too quickly, it doesn't register. I added a timer fix, but it's a little hacky
 - [ ] Fix unrecognized input
 
