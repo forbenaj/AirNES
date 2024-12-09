@@ -1,6 +1,6 @@
 # AirNES
 
-**AirNES** is an open source *air console*⁽¹⁾ that allows players to instantly turn their PC into a game console, using their smartphones as joysticks. It leverages the **Peer.js** library for LAN connectivity between host and players, and currently uses the **JSNES** emulator.
+**AirNES** is an open source *air console*⁽¹⁾ that allows players to instantly turn their PC into a game console, using their smartphones as joysticks. It leverages the **Peer.js** library for peer-to-peer connectivity between host and players, and currently uses the **JSNES** emulator.
 
 This is a playable work in progress, currently in version:
 
@@ -15,7 +15,7 @@ Just go to [nes.cosas.ar](https://nes.cosas.ar) from any device and start playin
 
 ## Features
 
-- **Peer-to-Peer LAN connection:** Connect to the host just by joining the same static webpage and being on the same Wi-Fi network.
+- **Peer-to-Peer LAN connection:** Connect to the host just by joining the same static webpage. You don't even need to be on the same Wi-Fi network (but it's recommended).
 - **Use your phone as a controller:** Open the same webpage on your phone and use it as a controller.
 - **ROM Upload and Management:** Upload any ROM and have them always at hand.
 - **Cross-Device Play:** Works on both desktop and mobile devices, either as host or as player.
@@ -30,11 +30,11 @@ To run **AirNES** locally, follow these steps:
    git clone https://github.com/forbenaj/AirNES.git
    cd AirNES
    
-2. Run the `index.html` in a local server. You can use the Live Server extension in VS Code.
+2. Open the `index.html` file, either in a local server or directly in browser.
 
-3. From the devices that will be used as joysticks (usually smartphones), you can join the server by entering your IPV4 and the port number.
+3. Open the same file on your phone.
 
-**AirNES** runs directly in the browser, so no additional setup or installation is required. Ensure all devices are in the same network.
+**AirNES** runs directly in the browser, so no additional setup or installation is required. Ensure all devices are in the same network for improved performance.
 
 ## Usage
 
@@ -130,9 +130,11 @@ The NES emulator has a few issues, and it may be the way I implemented it, but a
 When you press a button too quickly, it doesn't register. I added a timer fix, but it's a little hacky
 - [ ] Fix unrecognized input
 
-PeerParty is a thingy I tried to implement for a previous project.
+[OLD]: PeerParty is a thingy I tried to implement for a previous project.
 Instead of having to use a hostname, the users would see a list of active hosts, and connect to them by selecting one, or host a game themselves.
 The problem is that Peer.js doesn't have any way to advertise a peer, you need to add have the peer id to connect to it.
 So I did a hacky thing, where when you open the app, it tries to create a peer with a number (starting by 14 for some reason), and if it fails, it tries to create it with the next one, until it finds one that works. All those previous attempts are then displayed as a list of peers to connect to, because it means they are taken by other devices.
 This could be probably solved if I used WebRTC directly, but I'm not sure how to do that. Any way, it's either adapting the hacky thing and making it work, or coming up with a WebRTC solution.
-- [ ] Implement PeerParty
+[UPDATE]: Apparently I misunderstood how Peer.js works. I don't need to be in the same network to connect to a peer, so I basically could connect to a game hosted in China if I happened to type the same host name, which is something we don't want. And a peer party implemented like the one mentioned above would eventually list all the servers created worldwide, unless we find a way to look for servers on the local network only.
+Or, we could take the AirConsole approach and have an auto-generated host name, and allow connections from anywhere.
+- [ ] Implement PeerParty or auto-generated host name
