@@ -10,6 +10,7 @@ class Emulator{
         this.audioRightBuffer = []
     }
     initializeEmulator(){
+        console.log("Initializing emulator")
         this.canvas = document.getElementById("screen")
         this.canvasContext = this.canvas.getContext("2d");
         this.frameBuffer = this.canvasContext.createImageData(256, 240)
@@ -31,12 +32,10 @@ class Emulator{
                 }
             }
         });
-        document.getElementById("start-button").addEventListener("click", this.initializeAudio);
+        document.getElementById("start-button").addEventListener("click",  () => this.initializeAudio());
     
     }
     initializeAudio() {
-        this.audioLeftBuffer = []
-        this.audioRightBuffer = []
         if (!this.audioContext) {
             this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
             this.audioScriptNode = this.audioContext.createScriptProcessor(audioBufferSize, 0, 2);
@@ -80,3 +79,5 @@ const buttonMap = {
     'a': {controller: jsnes.Controller.BUTTON_A, pressed: false, time: 0},
     'b': {controller: jsnes.Controller.BUTTON_B, pressed: false, time: 0}
 };
+
+var emulator = null
