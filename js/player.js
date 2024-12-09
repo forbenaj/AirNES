@@ -48,7 +48,7 @@ class Player{
         document.addEventListener('touchend', (e) => {
             for (let i = 0; i < e.changedTouches.length; i++) {
                 let touch = e.changedTouches[i]
-                if (touchMap.has(touch.identifier)) {
+                if (this.touchMap.has(touch.identifier)) {
                     const buttonId = this.touchMap.get(touch.identifier)
                     this.conn.send({action: buttonId, attr: 0})
                     this.pressedButtons.splice(this.pressedButtons.indexOf(buttonId), 1)
@@ -70,7 +70,7 @@ class Player{
                 if (element.classList.contains("controller-button")) {
                     const buttonId = element.id;
     
-                    if (touchMap.has(touch.identifier)) {
+                    if (this.touchMap.has(touch.identifier)) {
                         if (buttonId !== this.touchMap.get(touch.identifier)) {
                             this.conn.send({action: this.touchMap.get(touch.identifier), attr: 0})
                             this.pressedButtons.splice(pressedButtons.indexOf(this.touchMap.get(touch.identifier)), 1)
