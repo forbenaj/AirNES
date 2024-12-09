@@ -17,7 +17,7 @@ class Host{
         let pressButton = (buttonId, i) => {
             let button = buttonMap[buttonId]
             if (button !== undefined) {
-                this.emulator.nes.buttonDown(i, button.controller);
+                emulator.nes.buttonDown(i, button.controller);
                 button.pressed = true
                 activateCounter(button)
             }
@@ -31,7 +31,7 @@ class Host{
         
             const intervalCheck = setInterval(() => {
                 if (button.time > 5) {
-                    this.emulator.nes.buttonUp(i, button.controller);
+                    emulator.nes.buttonUp(i, button.controller);
                     button.pressed = false;
                     clearInterval(intervalCheck);
                 }
@@ -49,25 +49,25 @@ class Host{
         players.push(player)
         let i = players.length
         document.addEventListener("keydown", (event) => {
-            if (event.key === "ArrowUp") this.emulator.nes.buttonDown(i, jsnes.Controller.BUTTON_UP);
-            if (event.key === "ArrowDown") this.emulator.nes.buttonDown(i, jsnes.Controller.BUTTON_DOWN);
-            if (event.key === "ArrowLeft") this.emulator.nes.buttonDown(i, jsnes.Controller.BUTTON_LEFT);
-            if (event.key === "ArrowRight") this.emulator.nes.buttonDown(i, jsnes.Controller.BUTTON_RIGHT);
-            if (event.key === "a") this.emulator.nes.buttonDown(i, jsnes.Controller.BUTTON_A);
-            if (event.key === "s") this.emulator.nes.buttonDown(i, jsnes.Controller.BUTTON_B);
-            if (event.key === "Enter") this.emulator.nes.buttonDown(i, jsnes.Controller.BUTTON_START);
-            if (event.key === " ") this.emulator.nes.buttonDown(i, jsnes.Controller.BUTTON_SELECT);
+            if (event.key === "ArrowUp") emulator.nes.buttonDown(i, jsnes.Controller.BUTTON_UP);
+            if (event.key === "ArrowDown") emulator.nes.buttonDown(i, jsnes.Controller.BUTTON_DOWN);
+            if (event.key === "ArrowLeft") emulator.nes.buttonDown(i, jsnes.Controller.BUTTON_LEFT);
+            if (event.key === "ArrowRight") emulator.nes.buttonDown(i, jsnes.Controller.BUTTON_RIGHT);
+            if (event.key === "a") emulator.nes.buttonDown(i, jsnes.Controller.BUTTON_A);
+            if (event.key === "s") emulator.nes.buttonDown(i, jsnes.Controller.BUTTON_B);
+            if (event.key === "Enter") emulator.nes.buttonDown(i, jsnes.Controller.BUTTON_START);
+            if (event.key === " ") emulator.nes.buttonDown(i, jsnes.Controller.BUTTON_SELECT);
         });
 
         document.addEventListener("keyup", (event) => {
-            if (event.key === "ArrowUp") this.emulator.nes.buttonUp(i, jsnes.Controller.BUTTON_UP);
-            if (event.key === "ArrowDown") this.emulator.nes.buttonUp(i, jsnes.Controller.BUTTON_DOWN);
-            if (event.key === "ArrowLeft") this.emulator.nes.buttonUp(i, jsnes.Controller.BUTTON_LEFT);
-            if (event.key === "ArrowRight") this.emulator.nes.buttonUp(i, jsnes.Controller.BUTTON_RIGHT);
-            if (event.key === "a") this.emulator.nes.buttonUp(i, jsnes.Controller.BUTTON_A);
-            if (event.key === "s") this.emulator.nes.buttonUp(i, jsnes.Controller.BUTTON_B);
-            if (event.key === "Enter") this.emulator.nes.buttonUp(i, jsnes.Controller.BUTTON_START);
-            if (event.key === " ") this.emulator.nes.buttonUp(i, jsnes.Controller.BUTTON_SELECT);
+            if (event.key === "ArrowUp") emulator.nes.buttonUp(i, jsnes.Controller.BUTTON_UP);
+            if (event.key === "ArrowDown") emulator.nes.buttonUp(i, jsnes.Controller.BUTTON_DOWN);
+            if (event.key === "ArrowLeft") emulator.nes.buttonUp(i, jsnes.Controller.BUTTON_LEFT);
+            if (event.key === "ArrowRight") emulator.nes.buttonUp(i, jsnes.Controller.BUTTON_RIGHT);
+            if (event.key === "a") emulator.nes.buttonUp(i, jsnes.Controller.BUTTON_A);
+            if (event.key === "s") emulator.nes.buttonUp(i, jsnes.Controller.BUTTON_B);
+            if (event.key === "Enter") emulator.nes.buttonUp(i, jsnes.Controller.BUTTON_START);
+            if (event.key === " ") emulator.nes.buttonUp(i, jsnes.Controller.BUTTON_SELECT);
         });
         let playerIndicator = document.getElementById("player"+i+"Indicator")
         playerIndicator.classList.remove("not-connected")
@@ -90,7 +90,7 @@ class Host{
     
 }
 
-let host = null
+var host = null
 
 romInput.addEventListener("change", function(event) {
     const file = event.target.files[0];
@@ -98,7 +98,7 @@ romInput.addEventListener("change", function(event) {
 
     reader.onload = function() {
         const romData = reader.result;
-        host.emulator.loadROM(romData);
+        emulator.loadROM(romData);
         //addRomToList(file.name, romData)
         console.log("Loaded "+file.name)
         startButton.style.display = "flex"
@@ -111,6 +111,7 @@ romInput.addEventListener("change", function(event) {
 
 function enterAsHost(){
     host = new Host()
+    emulator = new Emulator()
     let idInput = document.getElementById("id-input").value
     if(idInput==""){
         inputErrorMessage.innerText = "Insert a host name"
@@ -127,7 +128,7 @@ function enterAsHost(){
             document.getElementById('joystickContainer').style.display = "none"
         }
         loaderContainer.style.display = "none"
-        host.emulator.initializeEmulator()
+        emulator.initializeEmulator()
         document.getElementById('my_id').innerText = host.myself.id
       });
     

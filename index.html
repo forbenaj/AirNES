@@ -29,7 +29,7 @@
             <canvas id="screen" width="256" height="240"></canvas>
             <button id="upload-rom" onclick="document.getElementById('rom-input').click()">Upload Rom</button>
             <input type="file" id="rom-input" accept=".nes">
-            <button id="start-button" onclick="host.emulator.startEmulator()">Start Emulator</button>
+            <button id="start-button" onclick="emulator.startEmulator()">Start Emulator</button>
         </div>
         <div id="hostMenu">
             <div id="hostNameContainer">
@@ -46,7 +46,7 @@
                     <div id="player2KeyPress" class="keypress"></div>
                     <p>Player 2 not connected</p>
                 </div>
-                <button id="joinFromHostBtn" onclick="joinFromHost()">Join from this device</button>
+                <button id="joinFromHostBtn" onclick="host.joinFromHost()">Join from this device</button>
             </div>
             <div id="availableGamesContainer">
                 <h3>Available games:</h3>
