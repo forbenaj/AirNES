@@ -2,11 +2,16 @@
 
 **AirNES** is an open source *air console*⁽¹⁾ that allows players to instantly turn their PC into a game console, using their smartphones as joysticks. It leverages the **Peer.js** library for LAN connectivity between host and players, and currently uses the **JSNES** emulator.
 
+This is a playable work in progress, currently in version:
+
+~~**uglyaf-basic-clunky-laggy-hostnamy-nes**~~<br>
+**basic-clunky-laggy-hostnamy-nesonly**
+
 ## Play now!
 
 You don't need to install anything to play!
 
-Just go to [nes.cosas.ar](https://nes.cosas.ar) from any device to host or join a game.
+Just go to [nes.cosas.ar](https://nes.cosas.ar) from any device and start playing immediately.
 
 ## Features
 
