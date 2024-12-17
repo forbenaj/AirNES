@@ -73,7 +73,7 @@ class Player{
                     if (this.touchMap.has(touch.identifier)) {
                         if (buttonId !== this.touchMap.get(touch.identifier)) {
                             this.conn.send({action: this.touchMap.get(touch.identifier), attr: 0})
-                            this.pressedButtons.splice(pressedButtons.indexOf(this.touchMap.get(touch.identifier)), 1)
+                            this.pressedButtons.splice(this.pressedButtons.indexOf(this.touchMap.get(touch.identifier)), 1)
                             document.getElementById(this.touchMap.get(touch.identifier)).classList.remove("pressed")
                             this.touchMap.delete(touch.identifier)
                         }
