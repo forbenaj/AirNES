@@ -6,9 +6,12 @@
     <title>AirNES - Las Cosas</title>
     <script src="https://unpkg.com/jsnes/dist/jsnes.min.js"></script>
     <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/mainMenu.css">
+    <link rel="stylesheet" href="css/host.css">
+    <link rel="stylesheet" href="css/joystick.css">
 </head>
 <body>
+    <div id="consoleDiv"></div>
     <div id="mainMenu">
         <div id="introMenu">
             <h1 id="title">Welcome to AirNES!</h1>
@@ -27,7 +30,7 @@
             <canvas id="screen" width="256" height="240"></canvas>
             <button id="upload-rom" onclick="document.getElementById('rom-input').click()">Upload Rom</button>
             <input type="file" id="rom-input" accept=".nes">
-            <button id="start-button" onclick="startEmulator()">Start Emulator</button>
+            <button id="start-button" onclick="emulator.startEmulator()">Start Emulator</button>
         </div>
         <div id="hostMenu">
             <div id="hostNameContainer">
@@ -44,7 +47,7 @@
                     <div id="player2KeyPress" class="keypress"></div>
                     <p>Player 2 not connected</p>
                 </div>
-                <button id="joinFromHostBtn" onclick="joinFromHost()">Join from this device</button>
+                <button id="joinFromHostBtn" onclick="host.joinFromHost()">Join from this device</button>
             </div>
             <div id="availableGamesContainer">
                 <h3>Available games:</h3>
@@ -75,7 +78,9 @@
       <div id="loader-container">
         <div id="loader"></div>
       </div>
-    <script src="emulator.js"></script>
-    <script src="connection.js"></script>
+    <script src="js/emulator.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/host.js"></script>
+    <script src="js/player.js"></script>
 </body>
 </html>
