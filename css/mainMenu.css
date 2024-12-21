@@ -10,6 +10,20 @@ body {
     font-family: Arial, sans-serif;
     margin: 0;
 }
+#consoleDiv {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    border: 1px solid black;
+    padding: 10px;
+    height: 100vh;
+    width: 100vw;
+    overflow-y: scroll;
+    font-family: monospace;
+    z-index: 1;
+    pointer-events: none;
+}
 
 /* Menu style */
 
