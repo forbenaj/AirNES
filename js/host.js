@@ -2,7 +2,8 @@ class Host{
     constructor(){
         this.players = []
         this.myself = null
-        this.emulator = new Emulator()
+        this.pressedButtons = []
+        this.touchMap = new Map()
     }
 
     setupController(player, i){
@@ -37,44 +38,119 @@ class Host{
                 }
             }, 1);
         }
-        let playerIndicator = document.getElementById("player"+i+"Indicator")
-        playerIndicator.classList.remove("not-connected")
-        playerIndicator.classList.add("connected")
-        playerIndicator.getElementsByTagName("p")[0].innerText = "Player "+i+" connected"
+        this.setPlayerAsConnected(i)
     }
 
 
-    joinFromHost(){
+    joinFromHost(type){
         let player = null
         players.push(player)
-        let i = players.length
-        document.addEventListener("keydown", (event) => {
-            if (event.key === "ArrowUp") emulator.nes.buttonDown(i, jsnes.Controller.BUTTON_UP);
-            if (event.key === "ArrowDown") emulator.nes.buttonDown(i, jsnes.Controller.BUTTON_DOWN);
-            if (event.key === "ArrowLeft") emulator.nes.buttonDown(i, jsnes.Controller.BUTTON_LEFT);
-            if (event.key === "ArrowRight") emulator.nes.buttonDown(i, jsnes.Controller.BUTTON_RIGHT);
-            if (event.key === "a") emulator.nes.buttonDown(i, jsnes.Controller.BUTTON_A);
-            if (event.key === "s") emulator.nes.buttonDown(i, jsnes.Controller.BUTTON_B);
-            if (event.key === "Enter") emulator.nes.buttonDown(i, jsnes.Controller.BUTTON_START);
-            if (event.key === " ") emulator.nes.buttonDown(i, jsnes.Controller.BUTTON_SELECT);
-        });
+        let playerNum = players.length
+        if (type == "desktop") {
+            document.addEventListener("keydown", (event) => {
+                if (event.key === "ArrowUp") emulator.nes.buttonDown(playerNum, jsnes.Controller.BUTTON_UP);
+                if (event.key === "ArrowDown") emulator.nes.buttonDown(playerNum, jsnes.Controller.BUTTON_DOWN);
+                if (event.key === "ArrowLeft") emulator.nes.buttonDown(playerNum, jsnes.Controller.BUTTON_LEFT);
+                if (event.key === "ArrowRight") emulator.nes.buttonDown(playerNum, jsnes.Controller.BUTTON_RIGHT);
+                if (event.key === "a") emulator.nes.buttonDown(playerNum, jsnes.Controller.BUTTON_A);
+                if (event.key === "s") emulator.nes.buttonDown(playerNum, jsnes.Controller.BUTTON_B);
+                if (event.key === "Enter") emulator.nes.buttonDown(playerNum, jsnes.Controller.BUTTON_START);
+                if (event.key === " ") emulator.nes.buttonDown(playerNum, jsnes.Controller.BUTTON_SELECT);
+            });
 
-        document.addEventListener("keyup", (event) => {
-            if (event.key === "ArrowUp") emulator.nes.buttonUp(i, jsnes.Controller.BUTTON_UP);
-            if (event.key === "ArrowDown") emulator.nes.buttonUp(i, jsnes.Controller.BUTTON_DOWN);
-            if (event.key === "ArrowLeft") emulator.nes.buttonUp(i, jsnes.Controller.BUTTON_LEFT);
-            if (event.key === "ArrowRight") emulator.nes.buttonUp(i, jsnes.Controller.BUTTON_RIGHT);
-            if (event.key === "a") emulator.nes.buttonUp(i, jsnes.Controller.BUTTON_A);
-            if (event.key === "s") emulator.nes.buttonUp(i, jsnes.Controller.BUTTON_B);
-            if (event.key === "Enter") emulator.nes.buttonUp(i, jsnes.Controller.BUTTON_START);
-            if (event.key === " ") emulator.nes.buttonUp(i, jsnes.Controller.BUTTON_SELECT);
-        });
-        let playerIndicator = document.getElementById("player"+i+"Indicator")
-        playerIndicator.classList.remove("not-connected")
-        playerIndicator.classList.add("connected")
-        playerIndicator.getElementsByTagName("p")[0].innerText = "Player "+i+" connected (host)"
+            document.addEventListener("keyup", (event) => {
+                if (event.key === "ArrowUp") emulator.nes.buttonUp(playerNum, jsnes.Controller.BUTTON_UP);
+                if (event.key === "ArrowDown") emulator.nes.buttonUp(playerNum, jsnes.Controller.BUTTON_DOWN);
+                if (event.key === "ArrowLeft") emulator.nes.buttonUp(playerNum, jsnes.Controller.BUTTON_LEFT);
+                if (event.key === "ArrowRight") emulator.nes.buttonUp(playerNum, jsnes.Controller.BUTTON_RIGHT);
+                if (event.key === "a") emulator.nes.buttonUp(playerNum, jsnes.Controller.BUTTON_A);
+                if (event.key === "s") emulator.nes.buttonUp(playerNum, jsnes.Controller.BUTTON_B);
+                if (event.key === "Enter") emulator.nes.buttonUp(playerNum, jsnes.Controller.BUTTON_START);
+                if (event.key === " ") emulator.nes.buttonUp(playerNum, jsnes.Controller.BUTTON_SELECT);
+            });
+            this.setPlayerAsConnected(playerNum)
 
-        joinFromHostBtn.setAttribute("disabled", true)
+            let joinFromHostDesktopBtn = document.getElementById('joinFromHostDesktopBtn')
+            joinFromHostDesktopBtn.setAttribute("disabled", true)
+        }
+        else if (type == "mobile") {
+            console.log("Mobile")
+            document.getElementById("joystickContainer").style.display = "grid"
+            document.addEventListener('touchstart', (e) => {
+                for (let i = 0; i < e.touches.length; i++) {
+                    let touch = e.touches[i]
+                    const touchX = touch.clientX;
+                    const touchY = touch.clientY;
+        
+                const element = document.elementFromPoint(touchX, touchY);
+        
+                    if (element.classList.contains("controller-button")) {
+                        const buttonId = element.id;
+        
+                        if (!this.pressedButtons.includes(buttonId)) {
+                            this.pressedButtons.push(buttonId)
+                            emulator.nes.buttonDown(playerNum, buttonMap[buttonId].controller);
+                            console.log("Pressed "+buttonId)
+                            element.classList.add("pressed")
+                            this.touchMap.set(touch.identifier, buttonId)
+                        }
+                    }
+                }
+            }, {passive: false});
+        
+            document.addEventListener('touchend', (e) => {
+                for (let i = 0; i < e.changedTouches.length; i++) {
+                    let touch = e.changedTouches[i]
+                    if (this.touchMap.has(touch.identifier)) {
+                        const buttonId = this.touchMap.get(touch.identifier)
+                        emulator.nes.buttonUp(playerNum, buttonMap[buttonId].controller);
+                        this.pressedButtons.splice(this.pressedButtons.indexOf(buttonId), 1)
+                        document.getElementById(buttonId).classList.remove("pressed")
+                        this.touchMap.delete(touch.identifier)
+                    }
+                }
+            });
+        
+        
+            document.addEventListener('touchmove', (e) => {
+                for (let i = 0; i < e.touches.length; i++) {
+                    let touch = e.touches[i]
+                    const touchX = touch.clientX;
+                    const touchY = touch.clientY;
+        
+                    const element = document.elementFromPoint(touchX, touchY);
+        
+                    if (element.classList.contains("controller-button")) {
+                        const buttonId = element.id;
+        
+                        if (this.touchMap.has(touch.identifier)) {
+                            if (buttonId !== this.touchMap.get(touch.identifier)) {
+                                emulator.nes.buttonUp(playerNum, buttonMap[this.touchMap.get(touch.identifier)].controller);
+                                this.pressedButtons.splice(this.pressedButtons.indexOf(this.touchMap.get(touch.identifier)), 1)
+                                document.getElementById(this.touchMap.get(touch.identifier)).classList.remove("pressed")
+                                this.touchMap.delete(touch.identifier)
+                            }
+                        }
+                        if (!this.pressedButtons.includes(buttonId)) {
+                            this.pressedButtons.push(buttonId)
+                            emulator.nes.buttonDown(playerNum, buttonMap[buttonId].controller);
+                            element.classList.add("pressed")
+                            this.touchMap.set(touch.identifier, buttonId)
+                        }
+                    }
+                    else {
+                        if (this.touchMap.has(touch.identifier)) {
+                            const buttonId = this.touchMap.get(touch.identifier)
+                            emulator.nes.buttonUp(playerNum, buttonMap[buttonId].controller);
+                            this.pressedButtons.splice(this.pressedButtons.indexOf(buttonId), 1)
+                            document.getElementById(buttonId).classList.remove("pressed")
+                            this.touchMap.delete(touch.identifier)
+                        }
+                    }
+                }
+            });
+        }
+
     }
 
     addRomToList(name, romData) {
@@ -86,6 +162,18 @@ class Host{
         newGame.getElementsByClassName("delete-game")[0].addEventListener("click", () => {
             gamesList.removeChild(newGame)
         })
+    }
+
+    setPlayerAsConnected(playerNum){
+        let playerIndicatorDesktop = document.getElementById("player"+playerNum+"IndicatorDesktop")
+        playerIndicatorDesktop.classList.remove("not-connected")
+        playerIndicatorDesktop.classList.add("connected")
+        playerIndicatorDesktop.getElementsByTagName("p")[0].innerText = "Player "+playerNum+" connected"
+
+        let playerIndicatorMobile = document.getElementById("player"+playerNum+"IndicatorMobile")
+        playerIndicatorMobile.classList.remove("not-connected")
+        playerIndicatorMobile.classList.add("connected")
+        //playerIndicatorMobile.getElementsByTagName("p")[0].innerText = "Player "+playerNum+" connected"
     }
     
 }
