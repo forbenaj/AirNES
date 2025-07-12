@@ -6,7 +6,7 @@
     <title>AirNES - Las Cosas</title>
     <script src="https://unpkg.com/jsnes/dist/jsnes.min.js"></script>
     <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
-    <link rel="stylesheet" href="css/mainMenu.css">
+    <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/host.css">
     <link rel="stylesheet" href="css/joystick.css">
 </head>
@@ -26,33 +26,57 @@
     </div>
     
     <div id="hostMain">
+        <div id="hostNameContainer" class="hide-desktop">
+            <h1>Host name:</h1>
+            <h1 id="my_id">Test name</h1>
+        </div>
         <div id="emulator">
             <canvas id="screen" width="256" height="240"></canvas>
             <button id="upload-rom" onclick="document.getElementById('rom-input').click()">Upload Rom</button>
             <input type="file" id="rom-input" accept=".nes">
             <button id="start-button" onclick="emulator.startEmulator()">Start Emulator</button>
         </div>
-        <div id="hostMenu">
+        <div id="hostMenuBig">
             <div id="hostNameContainer">
                 <h1>Host name:</h1>
                 <h1 id="my_id">Test name</h1>
             </div>
             <div id="connectedPlayersContainer">
                 <h3>Connected players:</h3>
-                <div id="player1Indicator" class="indicatorContainer not-connected">
-                    <div id="player1KeyPress" class="keypress"></div>
+                <div id="player1IndicatorDesktop" class="indicatorContainer not-connected">
+                    <div id="player1KeyPressDesktop" class="keypress"></div>
                     <p>Player 1 not connected</p>
                 </div>
-                <div id="player2Indicator" class="indicatorContainer not-connected">
-                    <div id="player2KeyPress" class="keypress"></div>
+                <div id="player2IndicatorDesktop" class="indicatorContainer not-connected">
+                    <div id="player2KeyPressDesktop" class="keypress"></div>
                     <p>Player 2 not connected</p>
                 </div>
-                <button id="joinFromHostBtn" onclick="host.joinFromHost()">Join from this device</button>
+                <button id="joinFromHostDesktopBtn" onclick="host.joinFromHost('desktop')">Join from this device</button>
             </div>
             <div id="availableGamesContainer">
                 <h3>Available games:</h3>
                 <div id="gamesList"></div>
                 <button id="add-game-btn">Add game</button>
+            </div>
+        </div>
+        <div id="hostMenuSmall">
+            <div id="connectedPlayersContainer">
+                <h3>Connected players:</h3>
+                <div id="playerIndicators">
+                    <div id="player1IndicatorMobile" class="indicatorContainer not-connected">
+                        <div id="player1KeyPress" class="keypress"></div>
+                    </div>
+                    <div id="player2IndicatorMobile" class="indicatorContainer not-connected">
+                        <div id="player2KeyPress" class="keypress"></div>
+                    </div>
+                    <div id="player3IndicatorMobile" class="indicatorContainer not-connected">
+                        <div id="player1KeyPress" class="keypress"></div>
+                    </div>
+                    <div id="player4IndicatorMobile" class="indicatorContainer not-connected">
+                        <div id="player2KeyPress" class="keypress"></div>
+                    </div>
+                </div>
+                <button id="joinFromHostMobileBtn" onclick="host.joinFromHost('mobile')">Join from this device</button>
             </div>
         </div>
     </div>

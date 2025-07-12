@@ -28,6 +28,24 @@ body {
     pointer-events: none;
 }
 
+@media (orientation: portrait) {
+    .hide-mobile {
+        display: none;
+    }
+    .show-mobile {
+        display: flex;
+    }
+}
+
+@media (orientation: landscape) {
+    .hide-desktop {
+        display: none;
+    }
+    .show-desktop {
+        display: flex;
+    }
+}
+
 /* Menu style */
 
 #mainMenu {
