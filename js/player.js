@@ -16,88 +16,103 @@ class Player{
           });
     
           this.conn.on('error', (err) => {
-           console.log(err.type)
+            console.log(err.type)
+            showInputError("Host name doesn't exist")
+            loaderContainer.style.display = "none"
         });
     }
     sendData(data){
-        this.conn.send(data)
+        if (this.conn && this.conn.open) {
+            this.conn.send(data)
+        }
     }
+
+    pressControllerButton(buttonId, element) {
+        if (buttonId === "mode") {
+            toggleScreenOrientation();
+            return;
+        }
+
+        if (!buttonMap[buttonId] || this.pressedButtons.includes(buttonId)) {
+            return;
+        }
+
+        this.pressedButtons.push(buttonId)
+        this.sendData({action: buttonId, attr: 1})
+        element.classList.add("pressed")
+
+        if (navigator.vibrate) {
+            navigator.vibrate(12);
+        }
+    }
+
+    releaseControllerButton(buttonId) {
+        if (!buttonMap[buttonId]) {
+            return;
+        }
+
+        this.sendData({action: buttonId, attr: 0})
+        this.pressedButtons = this.pressedButtons.filter((pressedButton) => pressedButton !== buttonId)
+
+        const element = document.getElementById(buttonId);
+        if (element) {
+            element.classList.remove("pressed")
+        }
+    }
+
     createController() {
         document.addEventListener('touchstart', (e) => {
-            for (let i = 0; i < e.touches.length; i++) {
-                let touch = e.touches[i]
-                const touchX = touch.clientX;
-                const touchY = touch.clientY;
-    
-            const element = document.elementFromPoint(touchX, touchY);
-    
-                if (element.classList.contains("controller-button")) {
+            e.preventDefault();
+
+            for (let i = 0; i < e.changedTouches.length; i++) {
+                const touch = e.changedTouches[i]
+                const element = getControllerButtonElementAt(touch.clientX, touch.clientY);
+
+                if (element) {
                     const buttonId = element.id;
-    
-                    if (!this.pressedButtons.includes(buttonId)) {
-                        this.pressedButtons.push(buttonId)
-    
-                        this.conn.send({action: buttonId, attr: 1})
-                        element.classList.add("pressed")
-                        this.touchMap.set(touch.identifier, buttonId)
-                    }
+                    this.pressControllerButton(buttonId, element)
+                    this.touchMap.set(touch.identifier, buttonId)
                 }
             }
         }, {passive: false});
-    
-        document.addEventListener('touchend', (e) => {
-            for (let i = 0; i < e.changedTouches.length; i++) {
-                let touch = e.changedTouches[i]
+
+        const releaseTouches = (touches) => {
+            for (let i = 0; i < touches.length; i++) {
+                const touch = touches[i]
                 if (this.touchMap.has(touch.identifier)) {
                     const buttonId = this.touchMap.get(touch.identifier)
-                    this.conn.send({action: buttonId, attr: 0})
-                    this.pressedButtons.splice(this.pressedButtons.indexOf(buttonId), 1)
-                    document.getElementById(buttonId).classList.remove("pressed")
+                    this.releaseControllerButton(buttonId)
                     this.touchMap.delete(touch.identifier)
                 }
             }
-        });
+        };
+
+        document.addEventListener('touchend', (e) => releaseTouches(e.changedTouches));
+        document.addEventListener('touchcancel', (e) => releaseTouches(e.changedTouches));
     
     
         document.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+
             for (let i = 0; i < e.touches.length; i++) {
-                let touch = e.touches[i]
-                const touchX = touch.clientX;
-                const touchY = touch.clientY;
-    
-                const element = document.elementFromPoint(touchX, touchY);
-    
-                if (element.classList.contains("controller-button")) {
-                    const buttonId = element.id;
-    
-                    if (this.touchMap.has(touch.identifier)) {
-                        if (buttonId !== this.touchMap.get(touch.identifier)) {
-                            this.conn.send({action: this.touchMap.get(touch.identifier), attr: 0})
-                            this.pressedButtons.splice(this.pressedButtons.indexOf(this.touchMap.get(touch.identifier)), 1)
-                            document.getElementById(this.touchMap.get(touch.identifier)).classList.remove("pressed")
-                            this.touchMap.delete(touch.identifier)
-                        }
-                    }
-                    if (!this.pressedButtons.includes(buttonId)) {
-                        this.pressedButtons.push(buttonId)
-                        this.conn.send({action: buttonId, attr: 1})
-                        element.classList.add("pressed")
-                        this.touchMap.set(touch.identifier, buttonId)
-                    }
+                const touch = e.touches[i]
+                const element = getControllerButtonElementAt(touch.clientX, touch.clientY);
+                const nextButtonId = element ? element.id : null;
+                const previousButtonId = this.touchMap.get(touch.identifier);
+
+                if (previousButtonId && previousButtonId !== nextButtonId) {
+                    this.releaseControllerButton(previousButtonId)
+                    this.touchMap.delete(touch.identifier)
                 }
-                else {
-                    if (this.touchMap.has(touch.identifier)) {
-                        const buttonId = this.touchMap.get(touch.identifier)
-                        this.conn.send({action: buttonId, attr: 0})
-                        this.pressedButtons.splice(this.pressedButtons.indexOf(buttonId), 1)
-                        document.getElementById(buttonId).classList.remove("pressed")
-                        this.touchMap.delete(touch.identifier)
-                    }
+
+                if (!nextButtonId || previousButtonId === nextButtonId) {
+                    continue;
                 }
+
+                this.pressControllerButton(nextButtonId, element)
+                this.touchMap.set(touch.identifier, nextButtonId)
             }
-        });
-    
-        toggleScreenOrientation()
+        }, {passive: false});
     
         loaderContainer.style.display = "none"
     }
@@ -105,17 +120,18 @@ class Player{
 
 function enterAsPlayer(){
     let player = new Player()
-    let idInput = document.getElementById("id-input").value
-    if(idInput==""){
-        inputErrorMessage.innerText = "Insert a host name"
+    let hostName = getHostInputValue()
+    if(hostName==""){
+        showInputError("Insert a host name")
         return
     }
     loaderContainer.style.display = "flex"
     device_mode = "player"
+    enableWakeLock()
     player.myself = new Peer();
     player.myself.on('open', function(id) {
         console.log('Connected. My peer ID is: ' + id);
-        player.connectToHost(idInput)
+        player.connectToHost(hostName)
       });
     
       player.myself.on('connection', function(recievingConn) {
@@ -131,7 +147,7 @@ function enterAsPlayer(){
         }
         else if (err.type === 'peer-unavailable') {
             console.log('The peer you\'re trying to connect to doesn\'t exist');
-            inputErrorMessage.innerText = "Host name doesn't exist"
+            showInputError("Host name doesn't exist")
         } else {
             console.error('An unexpected error occurred:', err);
         }
@@ -141,34 +157,35 @@ function enterAsPlayer(){
 }
 
 
-function activateCounter(button) {
-    button.time = 0;
-
-    const intervalId = setInterval(() => {
-        button.time += 1;
-
-        if (!button.pressed || button.time > 5) {
-            clearInterval(intervalId);
-        }
-    }, 1);
-}
-
 let screenOrientation = "portrait"
 
-function toggleScreenOrientation() {
+async function toggleScreenOrientation() {
     if (screenOrientation == "portrait") {
         screenOrientation = "landscape"
-        document.documentElement.requestFullscreen();
-        if (screen.orientation) {
+        try {
+            if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+                await document.documentElement.requestFullscreen();
+            }
+        } catch (error) {
+            console.log('Error entering fullscreen: ', error);
+        }
+
+        if (screen.orientation && screen.orientation.lock) {
             screen.orientation.lock('landscape')
-              .catch((error) => console.log('Error locking orientation: ', error));
+                .catch((error) => console.log('Error locking orientation: ', error));
         }
     } else {
         screenOrientation = "portrait"
-        document.exitFullscreen();
-        if (screen.orientation) {
-            screen.orientation.unlock()
-              .catch((error) => console.log('Error unlocking orientation: ', error));
+        try {
+            if (document.fullscreenElement && document.exitFullscreen) {
+                await document.exitFullscreen();
+            }
+        } catch (error) {
+            console.log('Error exiting fullscreen: ', error);
+        }
+
+        if (screen.orientation && screen.orientation.unlock) {
+            screen.orientation.unlock();
         }
     }
 }

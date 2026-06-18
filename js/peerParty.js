@@ -23,7 +23,7 @@ class Party{
                     conn.on('data', function(data) {
                       console.log(conn.peer+': '+ data);
                     });
-                    this.members.push[conn]
+                    this.members.push(conn)
                 });
                 conn.on('error', (err) => {
                    console.log(err.type)
@@ -37,7 +37,9 @@ class Party{
                 console.log(`The peer ID ${this.myId} is already in use. Generating new`);
                 let memberElement = document.createElement('p')
                 memberElement.innerText = this.myId
-                this.partyElement.append(memberElement)
+                if (this.partyElement) {
+                    this.partyElement.append(memberElement)
+                }
                 this.connect(+this.myId+1)
             }
             else if (err.type === 'peer-unavailable') {
@@ -51,7 +53,7 @@ class Party{
             console.log("New peer connected: "+recievingConn.peer)
             this.members.push(recievingConn)
             recievingConn.on('data', function(data) {
-                console.log(conn.peer+': '+ data);
+                console.log(recievingConn.peer+': '+ data);
             });
         });
     }

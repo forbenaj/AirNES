@@ -5,7 +5,8 @@
 This is a playable work in progress, currently in version:
 
 ~~**uglyaf-basic-clunky-laggy-hostnamy-nes**~~<br>
-**basic-clunky-laggy-hostnamy-nesonly**
+~~**basic-clunky-laggy-hostnamy-nesonly**~~<br>
+**basic-nesonly**
 
 ## Play now!
 
@@ -15,10 +16,11 @@ Just go to [nes.cosas.ar](https://nes.cosas.ar) from any device and start playin
 
 ## Features
 
-- **Peer-to-Peer LAN connection:** Connect to the host just by joining the same static webpage. You don't even need to be on the same Wi-Fi network (but it's recommended).
+- **Peer-to-Peer connection:** Connect to a host by opening the same static webpage and entering its host name. The connection works over the internet, although a nearby network is recommended for lower latency.
 - **Use your phone as a controller:** Open the same webpage on your phone and use it as a controller.
-- **ROM Upload and Management:** Upload any ROM and have them always at hand.
+- **Persistent ROM Library:** Upload, select, and delete NES ROMs. The library is cached locally (IndexedDB). Games remain available between sessions.
 - **Cross-Device Play:** Works on both desktop and mobile devices, either as host or as player.
+- **Responsive Host View:** Host games from a desktop or phone!!
 
 ## Installation
 
@@ -29,6 +31,7 @@ To run **AirNES** locally, follow these steps:
    ```bash
    git clone https://github.com/forbenaj/AirNES.git
    cd AirNES
+   ```
    
 2. Open the `index.html` file, either in a local server or directly in browser.
 
@@ -49,9 +52,12 @@ To run **AirNES** locally, follow these steps:
 3. **Upload a ROM:**
    - Click the "Upload Rom" button and select a valid NES ROM file.
    - Once the ROM is loaded, click "Start Emulator" to begin the game.
+   - Use the game list to switch between uploaded ROMs or remove them from local storage.
 
 4. **Controller:**
    - Use the on-screen buttons on mobile or touch-enabled devices.
+   - Supported devices vibrate briefly when a controller button is pressed.
+   - When joining from the host desktop, use the arrow keys, `A`, `S`, `Enter`, and `Space`.
 
 5. **Full-Screen Mode:**
    - Toggle the screen orientation and full screen by touching the "Mode" button.
@@ -85,7 +91,7 @@ I feel that recently, video game and console design has shifted away from shared
 
 A console of this kind is just meant to be an addition to the scarce and unpopular list of modern party games, and has no other purpose than to try and bring people together and to be a canvas for creators to experiment with.
 
-That's why all my efforts will be focused on making this project as easy to use as possible, and accessible to everyone. You should be able to open [nes.cosas.ar](nes.cosas.ar) from any device, and play immediately with as little friction as possible. And it should be easy enough to create games for it or add new consoles.
+That's why all my efforts will be focused on making this project as easy to use as possible, and accessible to everyone. You should be able to open [nes.cosas.ar](https://nes.cosas.ar) from any device, and play immediately with as little friction as possible. And it should be easy enough to create games for it or add new consoles.
 
 ## Opensourceness
 
@@ -110,25 +116,25 @@ A good idea is to include race games with automatic acceleration, so it's either
 
 You can look at this list to have an idea of what I'm working on, what I need help with, and what are my ideas for the future:
 
-- [ ] Fix view when hosting from phone
-- [ ] Make game selection list work
-  - [ ] Add cache
+- [x] Fix view when hosting from phone
+- [x] Make game selection list work
+  - [x] Add cache
 
-- [ ] Add vibration to the controller
+- [x] Add vibration to the controller
 - [ ] Add other emulators
   - [ ] Nintendo 64
   - [ ] Game Boy
   - [ ] PlayStation
 - [ ] Add controller mapping
-- [ ] Add fullscreen
+- [x] Add fullscreen
 - [ ] Add savestates
 
 The NES emulator has a few issues, and it may be the way I implemented it, but also it would be good to try some others. I've played browser emulators with no issues at all, but mine for some reason is terribly laggy and performance-heavy, and framerate varies from computer to computer.
-- [ ] Fix delayed audio
-- [ ] Fix framerate
+- [x] Reduce delayed audio
+- [x] Stabilize framerate
 
 When you press a button too quickly, it doesn't register. I added a timer fix, but it's a little hacky
-- [ ] Fix unrecognized input
+- [x] Fix unrecognized input
 
 [OLD]: PeerParty is a thingy I tried to implement for a previous project.
 Instead of having to use a hostname, the users would see a list of active hosts, and connect to them by selecting one, or host a game themselves.

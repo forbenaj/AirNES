@@ -8,6 +8,11 @@ class Emulator{
         this.audioScriptNode = null
         this.audioLeftBuffer = []
         this.audioRightBuffer = []
+        this.audioReadIndex = 0
+        this.romLoaded = false
+        this.isRunning = false
+        this.animationFrameId = null
+        this.lastFrameTime = 0
     }
     initializeEmulator(){
         console.log("Initializing emulator")
@@ -32,8 +37,6 @@ class Emulator{
                 }
             }
         });
-        document.getElementById("start-button").addEventListener("click",  () => this.initializeAudio());
-    
     }
     initializeAudio() {
         if (!this.audioContext) {
@@ -44,29 +47,73 @@ class Emulator{
                 const outputRight = event.outputBuffer.getChannelData(1);
     
                 for (let i = 0; i < audioBufferSize; i++) {
-                    outputLeft[i] = this.audioLeftBuffer.length > 0 ? this.audioLeftBuffer.shift() : 0;
-                    outputRight[i] = this.audioRightBuffer.length > 0 ? this.audioRightBuffer.shift() : 0;
+                    if (this.audioReadIndex < this.audioLeftBuffer.length) {
+                        outputLeft[i] = this.audioLeftBuffer[this.audioReadIndex];
+                        outputRight[i] = this.audioRightBuffer[this.audioReadIndex];
+                        this.audioReadIndex += 1;
+                    } else {
+                        outputLeft[i] = 0;
+                        outputRight[i] = 0;
+                    }
+                }
+
+                if (this.audioReadIndex > audioBufferSize * 8) {
+                    this.audioLeftBuffer = this.audioLeftBuffer.slice(this.audioReadIndex);
+                    this.audioRightBuffer = this.audioRightBuffer.slice(this.audioReadIndex);
+                    this.audioReadIndex = 0;
                 }
             };
     
             this.audioScriptNode.connect(this.audioContext.destination);
         }
+
+        if (this.audioContext.state === "suspended") {
+            this.audioContext.resume();
+        }
     }
     
     loadROM(romData) {
         this.nes.loadROM(romData);
+        this.romLoaded = true;
     }
 
     startEmulator() {
-        this.nes.frame();
-        setInterval(() => this.nes.frame(), 1000/60);
+        if (!this.romLoaded) {
+            console.warn("Load a ROM before starting the emulator");
+            return;
+        }
+
+        this.initializeAudio();
+
+        if (this.isRunning) {
+            return;
+        }
+
+        this.isRunning = true;
+        this.lastFrameTime = 0;
         document.getElementById("start-button").style.display = "none"
+
+        const runFrame = (timestamp) => {
+            if (!this.lastFrameTime) {
+                this.lastFrameTime = timestamp;
+            }
+
+            const elapsed = timestamp - this.lastFrameTime;
+            if (elapsed >= FRAME_INTERVAL) {
+                this.nes.frame();
+                this.lastFrameTime = timestamp - (elapsed % FRAME_INTERVAL);
+            }
+
+            this.animationFrameId = requestAnimationFrame(runFrame);
+        };
+
+        this.animationFrameId = requestAnimationFrame(runFrame);
     }
     
 }
 
-const audioBufferSize = 4096;
-const FRAME_RATE = 1000 / 60;
+const audioBufferSize = 1024;
+const FRAME_INTERVAL = 1000 / 60;
 
 
 const buttonMap = {

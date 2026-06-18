@@ -1,72 +1,285 @@
+const ROM_DB_NAME = "AirNES";
+const ROM_DB_VERSION = 1;
+const ROM_STORE_NAME = "roms";
+const MIN_BUTTON_PRESS_MS = 35;
+
+function openRomDatabase() {
+    return new Promise((resolve, reject) => {
+        if (!window.indexedDB) {
+            resolve(null);
+            return;
+        }
+
+        const request = indexedDB.open(ROM_DB_NAME, ROM_DB_VERSION);
+
+        request.onupgradeneeded = () => {
+            const db = request.result;
+            if (!db.objectStoreNames.contains(ROM_STORE_NAME)) {
+                db.createObjectStore(ROM_STORE_NAME, {keyPath: "name"});
+            }
+        };
+
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+    });
+}
+
+async function withRomStore(mode, operation) {
+    const db = await openRomDatabase();
+    if (!db) {
+        return null;
+    }
+
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(ROM_STORE_NAME, mode);
+        const store = transaction.objectStore(ROM_STORE_NAME);
+        const request = operation(store);
+
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+        transaction.oncomplete = () => db.close();
+        transaction.onerror = () => reject(transaction.error);
+    });
+}
+
+async function readStoredRoms() {
+    try {
+        return await withRomStore("readonly", (store) => store.getAll()) || [];
+    } catch (err) {
+        console.warn("Could not read saved games", err);
+        return [];
+    }
+}
+
+async function saveStoredRom(game) {
+    try {
+        await withRomStore("readwrite", (store) => store.put(game));
+    } catch (err) {
+        console.warn("Could not save game locally", err);
+    }
+}
+
+async function deleteStoredRom(name) {
+    try {
+        await withRomStore("readwrite", (store) => store.delete(name));
+    } catch (err) {
+        console.warn("Could not delete saved game", err);
+    }
+}
+
 class Host{
     constructor(){
         this.players = []
         this.myself = null
         this.pressedButtons = []
         this.touchMap = new Map()
+        this.inputStates = new Map()
+        this.romLibrary = []
+        this.selectedRomName = null
     }
 
     setupController(player, i){
-        player.on('data', function(data){
-            //let playerKeyPress = document.getElementById("player"+i+"KeyPress")
-            if (data.attr == 1) {
-                pressButton(data.action, i)
-            } else {
-                releaseButton(data.action, i)
-            }
-        });
-        let pressButton = (buttonId, i) => {
-            let button = buttonMap[buttonId]
-            if (button !== undefined) {
-                emulator.nes.buttonDown(i, button.controller);
-                button.pressed = true
-                activateCounter(button)
-            }
-        }
-        let releaseButton = (buttonId, i) => {
-            let button = buttonMap[buttonId];
-        
-            if (!button) {
+        player.on('data', (data) => {
+            if (!data || !data.action) {
                 return;
             }
-        
-            const intervalCheck = setInterval(() => {
-                if (button.time > 5) {
-                    emulator.nes.buttonUp(i, button.controller);
-                    button.pressed = false;
-                    clearInterval(intervalCheck);
-                }
-            }, 1);
-        }
+
+            if (data.attr == 1) {
+                this.pressNesButton(i, data.action)
+            } else {
+                this.releaseNesButton(i, data.action)
+            }
+        });
+
         this.setPlayerAsConnected(i)
     }
 
+    getInputState(playerNum, buttonId) {
+        const stateKey = `${playerNum}:${buttonId}`;
+        if (!this.inputStates.has(stateKey)) {
+            this.inputStates.set(stateKey, {
+                pressed: false,
+                pressedAt: 0,
+                releaseTimer: null
+            });
+        }
+
+        return this.inputStates.get(stateKey);
+    }
+
+    pressNesButton(playerNum, buttonId) {
+        const button = buttonMap[buttonId];
+        if (!button || !emulator || !emulator.nes) {
+            return;
+        }
+
+        const state = this.getInputState(playerNum, buttonId);
+        if (state.releaseTimer) {
+            clearTimeout(state.releaseTimer);
+            state.releaseTimer = null;
+        }
+
+        if (state.pressed) {
+            return;
+        }
+
+        emulator.nes.buttonDown(playerNum, button.controller);
+        state.pressed = true;
+        state.pressedAt = performance.now();
+    }
+
+    releaseNesButton(playerNum, buttonId) {
+        const button = buttonMap[buttonId];
+        if (!button || !emulator || !emulator.nes) {
+            return;
+        }
+
+        const state = this.getInputState(playerNum, buttonId);
+        if (!state.pressed) {
+            return;
+        }
+
+        const elapsed = performance.now() - state.pressedAt;
+        const releaseDelay = Math.max(0, MIN_BUTTON_PRESS_MS - elapsed);
+
+        if (state.releaseTimer) {
+            clearTimeout(state.releaseTimer);
+        }
+
+        state.releaseTimer = setTimeout(() => {
+            emulator.nes.buttonUp(playerNum, button.controller);
+            state.pressed = false;
+            state.releaseTimer = null;
+        }, releaseDelay);
+    }
+
+    pressControllerButton(playerNum, buttonId, element) {
+        if (buttonId === "mode") {
+            toggleScreenOrientation();
+            return;
+        }
+
+        if (!buttonMap[buttonId] || this.pressedButtons.includes(buttonId)) {
+            return;
+        }
+
+        this.pressedButtons.push(buttonId);
+        this.pressNesButton(playerNum, buttonId);
+        element.classList.add("pressed");
+    }
+
+    releaseControllerButton(playerNum, buttonId) {
+        if (!buttonMap[buttonId]) {
+            return;
+        }
+
+        this.releaseNesButton(playerNum, buttonId);
+        this.pressedButtons = this.pressedButtons.filter((pressedButton) => pressedButton !== buttonId);
+
+        const element = document.getElementById(buttonId);
+        if (element) {
+            element.classList.remove("pressed");
+        }
+    }
+
+    bindTouchController(playerNum) {
+        document.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+
+            for (let i = 0; i < e.changedTouches.length; i++) {
+                const touch = e.changedTouches[i];
+                const element = getControllerButtonElementAt(touch.clientX, touch.clientY);
+
+                if (!element) {
+                    continue;
+                }
+
+                const buttonId = element.id;
+                this.pressControllerButton(playerNum, buttonId, element);
+                this.touchMap.set(touch.identifier, buttonId);
+
+                if (navigator.vibrate && buttonMap[buttonId]) {
+                    navigator.vibrate(12);
+                }
+            }
+        }, {passive: false});
+
+        const releaseTouches = (touches) => {
+            for (let i = 0; i < touches.length; i++) {
+                const touch = touches[i];
+                if (!this.touchMap.has(touch.identifier)) {
+                    continue;
+                }
+
+                const buttonId = this.touchMap.get(touch.identifier);
+                this.releaseControllerButton(playerNum, buttonId);
+                this.touchMap.delete(touch.identifier);
+            }
+        };
+
+        document.addEventListener('touchend', (e) => releaseTouches(e.changedTouches));
+        document.addEventListener('touchcancel', (e) => releaseTouches(e.changedTouches));
+
+        document.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+
+            for (let i = 0; i < e.touches.length; i++) {
+                const touch = e.touches[i];
+                const element = getControllerButtonElementAt(touch.clientX, touch.clientY);
+                const nextButtonId = element ? element.id : null;
+                const previousButtonId = this.touchMap.get(touch.identifier);
+
+                if (previousButtonId && previousButtonId !== nextButtonId) {
+                    this.releaseControllerButton(playerNum, previousButtonId);
+                    this.touchMap.delete(touch.identifier);
+                }
+
+                if (!nextButtonId || previousButtonId === nextButtonId) {
+                    continue;
+                }
+
+                this.pressControllerButton(playerNum, nextButtonId, element);
+                this.touchMap.set(touch.identifier, nextButtonId);
+            }
+        }, {passive: false});
+    }
 
     joinFromHost(type){
         let player = null
         players.push(player)
         let playerNum = players.length
         if (type == "desktop") {
+            const keyMap = {
+                ArrowUp: "up",
+                ArrowDown: "down",
+                ArrowLeft: "left",
+                ArrowRight: "right",
+                a: "a",
+                A: "a",
+                s: "b",
+                S: "b",
+                Enter: "start",
+                " ": "select"
+            };
+
             document.addEventListener("keydown", (event) => {
-                if (event.key === "ArrowUp") emulator.nes.buttonDown(playerNum, jsnes.Controller.BUTTON_UP);
-                if (event.key === "ArrowDown") emulator.nes.buttonDown(playerNum, jsnes.Controller.BUTTON_DOWN);
-                if (event.key === "ArrowLeft") emulator.nes.buttonDown(playerNum, jsnes.Controller.BUTTON_LEFT);
-                if (event.key === "ArrowRight") emulator.nes.buttonDown(playerNum, jsnes.Controller.BUTTON_RIGHT);
-                if (event.key === "a") emulator.nes.buttonDown(playerNum, jsnes.Controller.BUTTON_A);
-                if (event.key === "s") emulator.nes.buttonDown(playerNum, jsnes.Controller.BUTTON_B);
-                if (event.key === "Enter") emulator.nes.buttonDown(playerNum, jsnes.Controller.BUTTON_START);
-                if (event.key === " ") emulator.nes.buttonDown(playerNum, jsnes.Controller.BUTTON_SELECT);
+                const buttonId = keyMap[event.key];
+                if (!buttonId || event.repeat) {
+                    return;
+                }
+
+                event.preventDefault();
+                this.pressNesButton(playerNum, buttonId);
             });
 
             document.addEventListener("keyup", (event) => {
-                if (event.key === "ArrowUp") emulator.nes.buttonUp(playerNum, jsnes.Controller.BUTTON_UP);
-                if (event.key === "ArrowDown") emulator.nes.buttonUp(playerNum, jsnes.Controller.BUTTON_DOWN);
-                if (event.key === "ArrowLeft") emulator.nes.buttonUp(playerNum, jsnes.Controller.BUTTON_LEFT);
-                if (event.key === "ArrowRight") emulator.nes.buttonUp(playerNum, jsnes.Controller.BUTTON_RIGHT);
-                if (event.key === "a") emulator.nes.buttonUp(playerNum, jsnes.Controller.BUTTON_A);
-                if (event.key === "s") emulator.nes.buttonUp(playerNum, jsnes.Controller.BUTTON_B);
-                if (event.key === "Enter") emulator.nes.buttonUp(playerNum, jsnes.Controller.BUTTON_START);
-                if (event.key === " ") emulator.nes.buttonUp(playerNum, jsnes.Controller.BUTTON_SELECT);
+                const buttonId = keyMap[event.key];
+                if (!buttonId) {
+                    return;
+                }
+
+                event.preventDefault();
+                this.releaseNesButton(playerNum, buttonId);
             });
             this.setPlayerAsConnected(playerNum)
 
@@ -76,121 +289,151 @@ class Host{
         else if (type == "mobile") {
             console.log("Mobile")
             document.getElementById("joystickContainer").style.display = "grid"
-            document.addEventListener('touchstart', (e) => {
-                for (let i = 0; i < e.touches.length; i++) {
-                    let touch = e.touches[i]
-                    const touchX = touch.clientX;
-                    const touchY = touch.clientY;
-        
-                const element = document.elementFromPoint(touchX, touchY);
-        
-                    if (element.classList.contains("controller-button")) {
-                        const buttonId = element.id;
-        
-                        if (!this.pressedButtons.includes(buttonId)) {
-                            this.pressedButtons.push(buttonId)
-                            emulator.nes.buttonDown(playerNum, buttonMap[buttonId].controller);
-                            console.log("Pressed "+buttonId)
-                            element.classList.add("pressed")
-                            this.touchMap.set(touch.identifier, buttonId)
-                        }
-                    }
-                }
-            }, {passive: false});
-        
-            document.addEventListener('touchend', (e) => {
-                for (let i = 0; i < e.changedTouches.length; i++) {
-                    let touch = e.changedTouches[i]
-                    if (this.touchMap.has(touch.identifier)) {
-                        const buttonId = this.touchMap.get(touch.identifier)
-                        emulator.nes.buttonUp(playerNum, buttonMap[buttonId].controller);
-                        this.pressedButtons.splice(this.pressedButtons.indexOf(buttonId), 1)
-                        document.getElementById(buttonId).classList.remove("pressed")
-                        this.touchMap.delete(touch.identifier)
-                    }
-                }
-            });
-        
-        
-            document.addEventListener('touchmove', (e) => {
-                for (let i = 0; i < e.touches.length; i++) {
-                    let touch = e.touches[i]
-                    const touchX = touch.clientX;
-                    const touchY = touch.clientY;
-        
-                    const element = document.elementFromPoint(touchX, touchY);
-        
-                    if (element.classList.contains("controller-button")) {
-                        const buttonId = element.id;
-        
-                        if (this.touchMap.has(touch.identifier)) {
-                            if (buttonId !== this.touchMap.get(touch.identifier)) {
-                                emulator.nes.buttonUp(playerNum, buttonMap[this.touchMap.get(touch.identifier)].controller);
-                                this.pressedButtons.splice(this.pressedButtons.indexOf(this.touchMap.get(touch.identifier)), 1)
-                                document.getElementById(this.touchMap.get(touch.identifier)).classList.remove("pressed")
-                                this.touchMap.delete(touch.identifier)
-                            }
-                        }
-                        if (!this.pressedButtons.includes(buttonId)) {
-                            this.pressedButtons.push(buttonId)
-                            emulator.nes.buttonDown(playerNum, buttonMap[buttonId].controller);
-                            element.classList.add("pressed")
-                            this.touchMap.set(touch.identifier, buttonId)
-                        }
-                    }
-                    else {
-                        if (this.touchMap.has(touch.identifier)) {
-                            const buttonId = this.touchMap.get(touch.identifier)
-                            emulator.nes.buttonUp(playerNum, buttonMap[buttonId].controller);
-                            this.pressedButtons.splice(this.pressedButtons.indexOf(buttonId), 1)
-                            document.getElementById(buttonId).classList.remove("pressed")
-                            this.touchMap.delete(touch.identifier)
-                        }
-                    }
-                }
-            });
+            this.bindTouchController(playerNum)
+
+            let joinFromHostMobileBtn = document.getElementById('joinFromHostMobileBtn')
+            joinFromHostMobileBtn.setAttribute("disabled", true)
         }
 
     }
 
-    addRomToList(name, romData) {
+    async initializeGameLibrary() {
+        this.romLibrary = await readStoredRoms();
+        this.romLibrary.sort((a, b) => a.name.localeCompare(b.name));
+        this.renderGameList();
+    }
+
+    async addRomToList(name, romData) {
+        const game = {
+            name,
+            romData,
+            addedAt: Date.now()
+        };
+
+        const existingIndex = this.romLibrary.findIndex((storedGame) => storedGame.name === name);
+        if (existingIndex >= 0) {
+            this.romLibrary[existingIndex] = game;
+        } else {
+            this.romLibrary.push(game);
+        }
+
+        this.romLibrary.sort((a, b) => a.name.localeCompare(b.name));
+        this.loadGame(game);
+        this.renderGameList();
+        await saveStoredRom(game);
+    }
+
+    loadGame(game) {
+        emulator.loadROM(game.romData);
+        this.selectedRomName = game.name;
+        startButton.style.display = "flex";
+        uploadRom.style.display = "none";
+        console.log("Loaded "+game.name);
+    }
+
+    selectRom(name) {
+        const game = this.romLibrary.find((storedGame) => storedGame.name === name);
+        if (!game) {
+            return;
+        }
+
+        this.loadGame(game);
+        this.renderGameList();
+    }
+
+    async deleteRom(name) {
+        this.romLibrary = this.romLibrary.filter((storedGame) => storedGame.name !== name);
+        await deleteStoredRom(name);
+
+        if (this.selectedRomName === name) {
+            this.selectedRomName = null;
+            if (!emulator.isRunning) {
+                startButton.style.display = "none";
+                uploadRom.style.display = "inline-block";
+            }
+        }
+
+        this.renderGameList();
+    }
+
+    renderGameList() {
         let gamesList = document.getElementById("gamesList")
-        let newGame = document.createElement("div")
-        newGame.classList.add("game")
-        newGame.innerHTML = `<h3>${name}</h3>`
-        gamesList.appendChild(newGame)
-        newGame.getElementsByClassName("delete-game")[0].addEventListener("click", () => {
-            gamesList.removeChild(newGame)
-        })
+        gamesList.textContent = "";
+
+        if (this.romLibrary.length === 0) {
+            const emptyMessage = document.createElement("p");
+            emptyMessage.classList.add("empty-game-list");
+            emptyMessage.innerText = "No games uploaded yet";
+            gamesList.appendChild(emptyMessage);
+            return;
+        }
+
+        this.romLibrary.forEach((game) => {
+            const gameElement = document.createElement("div");
+            gameElement.classList.add("game");
+
+            if (game.name === this.selectedRomName) {
+                gameElement.classList.add("selected");
+            }
+
+            const selectButton = document.createElement("button");
+            selectButton.type = "button";
+            selectButton.classList.add("game-select");
+            selectButton.innerText = game.name;
+            selectButton.title = game.name;
+            selectButton.addEventListener("click", () => this.selectRom(game.name));
+
+            const deleteButton = document.createElement("button");
+            deleteButton.type = "button";
+            deleteButton.classList.add("delete-game");
+            deleteButton.innerText = "Delete";
+            deleteButton.addEventListener("click", (event) => {
+                event.stopPropagation();
+                this.deleteRom(game.name);
+            });
+
+            gameElement.append(selectButton, deleteButton);
+            gamesList.appendChild(gameElement);
+        });
     }
 
     setPlayerAsConnected(playerNum){
         let playerIndicatorDesktop = document.getElementById("player"+playerNum+"IndicatorDesktop")
-        playerIndicatorDesktop.classList.remove("not-connected")
-        playerIndicatorDesktop.classList.add("connected")
-        playerIndicatorDesktop.getElementsByTagName("p")[0].innerText = "Player "+playerNum+" connected"
+        if (playerIndicatorDesktop) {
+            playerIndicatorDesktop.classList.remove("not-connected")
+            playerIndicatorDesktop.classList.add("connected")
+            playerIndicatorDesktop.getElementsByTagName("p")[0].innerText = "Player "+playerNum+" connected"
+        }
 
         let playerIndicatorMobile = document.getElementById("player"+playerNum+"IndicatorMobile")
-        playerIndicatorMobile.classList.remove("not-connected")
-        playerIndicatorMobile.classList.add("connected")
-        //playerIndicatorMobile.getElementsByTagName("p")[0].innerText = "Player "+playerNum+" connected"
+        if (playerIndicatorMobile) {
+            playerIndicatorMobile.classList.remove("not-connected")
+            playerIndicatorMobile.classList.add("connected")
+            //playerIndicatorMobile.getElementsByTagName("p")[0].innerText = "Player "+playerNum+" connected"
+        }
     }
     
 }
 
 var host = null
+let addGameButton = document.getElementById('add-game-btn')
 
-romInput.addEventListener("change", function(event) {
+addGameButton.addEventListener("click", () => {
+    romInput.click();
+});
+
+romInput.addEventListener("change", async function(event) {
     const file = event.target.files[0];
+    if (!file) {
+        return;
+    }
+
     const reader = new FileReader();
 
-    reader.onload = function() {
+    reader.onload = async function() {
         const romData = reader.result;
-        emulator.loadROM(romData);
-        //addRomToList(file.name, romData)
-        console.log("Loaded "+file.name)
-        startButton.style.display = "flex"
-        uploadRom.style.display = "none"
+        await host.addRomToList(file.name, romData);
+        romInput.value = "";
     };
 
     reader.readAsBinaryString(file);
@@ -198,15 +441,17 @@ romInput.addEventListener("change", function(event) {
 
 
 function enterAsHost(){
-    host = new Host()
-    emulator = new Emulator()
-    let idInput = document.getElementById("id-input").value
-    if(idInput==""){
-        inputErrorMessage.innerText = "Insert a host name"
+    let hostName = getHostInputValue()
+    if(hostName==""){
+        showInputError("Insert a host name")
         return
     }
+
+    host = new Host()
+    emulator = new Emulator()
+    enableWakeLock()
     loaderContainer.style.display = "flex"
-    host.myself = new Peer(idInput);
+    host.myself = new Peer(hostName);
     host.myself.on('open', function(id) {
         console.log('Connected as host. My peer ID is: ' + id);
         device_mode = "host"
@@ -217,7 +462,10 @@ function enterAsHost(){
         }
         loaderContainer.style.display = "none"
         emulator.initializeEmulator()
-        document.getElementById('my_id').innerText = host.myself.id
+        document.querySelectorAll('.host-id').forEach((hostIdElement) => {
+            hostIdElement.innerText = host.myself.id
+        });
+        host.initializeGameLibrary()
       });
     
     host.myself.on('connection', function(recievingConn) {
@@ -230,11 +478,11 @@ function enterAsHost(){
     host.myself.on('error', (err) => {
         if (err.type === 'unavailable-id') {
             console.log('The host name is already in use. Choose another one');
-            inputErrorMessage.innerText = "Host name already in use"
+            showInputError("Host name already in use")
         }
         else if (err.type === 'peer-unavailable') {
             console.log('The peer you\'re trying to connect to doesn\'t exist');
-            inputErrorMessage.innerText = "Peer doesn't exist"
+            showInputError("Peer doesn't exist")
         } else {
             console.error('An unexpected error occurred:', err);
         }

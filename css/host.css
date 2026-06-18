@@ -5,6 +5,8 @@
     justify-content: space-between;
     align-items: flex-start;
     gap: 20px;
+    max-width: 100vw;
+    box-sizing: border-box;
 }
 #emulator {
     display: flex;
@@ -15,10 +17,13 @@
 }
 
 #screen {
-    width: 80vh;
-    height: 80vh;
+    width: min(80vh, 70vw);
+    height: auto;
+    aspect-ratio: 256 / 240;
     border: 1px solid #262626;
+    box-sizing: border-box;
     background-color: #0000002d;
+    image-rendering: pixelated;
 }
 
 #upload-rom {
@@ -69,7 +74,7 @@
     gap: 10px;
 }
 
-#hostNameContainer {
+.host-name-container {
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -84,21 +89,72 @@
 }
 
 #gamesList {
+    display: flex;
+    flex-direction: column;
     gap: 10px;
     border: 1px solid #888;
     width: 250px;
     height: 300px;
+    overflow-y: auto;
+    padding: 10px;
+    box-sizing: border-box;
+    background: rgba(0, 0, 0, 0.25);
 }
 
-#hostNameContainer h1{
+.game {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+    align-items: center;
+}
+
+.game-select {
+    min-width: 0;
+    padding: 8px;
+    color: #fff;
+    background: #333;
+    border: 1px solid #666;
+    border-radius: 4px;
+    cursor: pointer;
+    text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.game.selected .game-select {
+    border-color: #4CAF50;
+    background: #245c27;
+}
+
+.delete-game {
+    padding: 8px 10px;
+    color: #fff;
+    background: #7b2020;
+    border: 1px solid #a94343;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.empty-game-list {
+    margin: 0;
+    color: #bbb;
+}
+
+#add-game-btn {
+    padding: 10px;
+    cursor: pointer;
+}
+
+.host-name-container h1{
     margin: 0;
 }
 
-#hostNameContainer h1 {
+.host-name-container h1 {
     font-size: 1.5rem;
 }
 
-#connectedPlayersContainer {
+.connected-players-container {
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -107,19 +163,19 @@
     font-size: 1rem;
 }
 
-#connectedPlayersContainer p {
+.connected-players-container p {
     margin: 0;
     font-size: 1rem;
 }
 
-#connectedPlayersContainer .connected p {
+.connected-players-container .connected p {
     color: #0F0;
 }
-#connectedPlayersContainer .not-connected p {
+.connected-players-container .not-connected p {
     color: #F00;
 }
 
-#connectedPlayersContainer .keypress {
+.connected-players-container .keypress {
     border: 1px solid #444;
     width: 0.8rem;
     height: 0.8rem;
@@ -129,14 +185,14 @@
     justify-content: center;
 }
 
-#connectedPlayersContainer .not-connected .keypress {
+.connected-players-container .not-connected .keypress {
     border-color: #888;
 }
-#connectedPlayersContainer .connected .keypress{
+.connected-players-container .connected .keypress{
     border-color: #FFF;
 }
 
-#connectedPlayersContainer .indicatorContainer {
+.connected-players-container .indicatorContainer {
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -153,10 +209,28 @@
         flex-direction: column;
         align-items: center;
         gap: 10px;
+        width: 100%;
+        min-height: 100%;
+        justify-content: flex-start;
+        padding: 12px 0 180px;
+    }
+    .host-name-container.hide-desktop {
+        order: 1;
+    }
+    #emulator {
+        order: 2;
+        width: 100%;
+    }
+    #hostMenuSmall {
+        order: 3;
+    }
+    #availableGamesContainer {
+        order: 4;
     }
     #screen {
-        width: 100vw;
-        height: 100vw;
+        width: min(calc(100vw - 16px), calc(52vh * 256 / 240));
+        max-width: calc(100vw - 16px);
+        height: auto;
     }
     #hostMenuBig {
         display: none;
